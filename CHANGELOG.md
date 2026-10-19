@@ -13,8 +13,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   released source archives to the personal `jezdez` channel on Anaconda.org.
 
 - CEP 27 publication bundles for the project's conda packages, verified before
-  upload and retained through GitHub workflow artifacts and attestations.
-  Added a guide for retrieving and verifying this evidence.
+  upload and retained in GitHub's attestation store and as workflow artifacts.
+  A new guide explains how to retrieve and verify these bundles.
 
 - Offline interoperability tests with a captured Rattler-Build publication and
   the released `py-rattler` verifier, plus Python-to-Rust verification in the

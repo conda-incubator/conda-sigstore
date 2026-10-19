@@ -5,9 +5,9 @@ package uploaded to `https://conda.anaconda.org/jezdez`. It verifies the bundle
 before upload and retains it in GitHub, alongside separate SLSA build
 provenance.
 
-This applies to publications made with the updated workflow. The existing
-0.1.2 conda package has SLSA provenance only and cannot pass the CEP 27
-publication check below.
+The existing 0.1.2 conda package has SLSA provenance only and cannot pass the
+CEP 27 publication check below. Use a package published after CEP 27 signing
+was added to the workflow.
 
 ## Download the package and bundle
 
@@ -19,8 +19,8 @@ Choose the exact package filename from the
 [`jezdez` channel's files](https://anaconda.org/jezdez/conda-sigstore/files) and
 find the corresponding successful publication run in the
 [repository's workflows](https://github.com/jezdez/conda-sigstore/actions).
-Replace `VERSION`, `BUILD`, and `PUBLISH_RUN_ID` below. Use the release workflow
-run when it called the conda publishing workflow.
+Replace `VERSION`, `BUILD`, and `PUBLISH_RUN_ID` below. If the release workflow
+called the conda publishing workflow, use that release run.
 
 ```console
 package='conda-sigstore-VERSION-BUILD.conda'
@@ -45,8 +45,8 @@ conda sigstore verify "$package" \
   --channel https://conda.anaconda.org/jezdez
 ```
 
-A verified result checks the Sigstore evidence, exact package filename and
-SHA-256, CEP 27 statement, and target channel. It reports the authenticated
+Verification checks the Sigstore evidence, exact package filename and SHA-256,
+CEP 27 statement, and target channel. The result reports the authenticated
 certificate identity and OIDC issuer. It does not establish channel permission
 or package safety. SLSA provenance describes the build and does not substitute
 for the CEP 27 statement.
@@ -91,8 +91,8 @@ conda sigstore verify "$package" --bundle publication-bundles.json \
 You can add the paired signer options here too. A missing CEP 27 bundle is a
 verification failure, even if SLSA evidence is available.
 
-These commands retrieve evidence explicitly from GitHub. They do not require
-or assume that Anaconda.org serves attestation sidecars. Installing the package
-does not automatically perform this check. See
+These commands retrieve evidence from GitHub and do not require attestation
+sidecars on Anaconda.org. Installing the package does not automatically run
+this check. See
 [Install verification](../explanation/install-verification.md) for the separate
 opt-in installation behavior and its transport requirements.
