@@ -6,7 +6,8 @@ installed environment, or require valid evidence before conda extracts a
 package.
 
 :::{warning}
-This is alpha software, distributed through PyPI. Install
+This is alpha software, distributed through PyPI and the personal `jezdez`
+channel on Anaconda.org. Install
 verification requires the unreleased conda API in
 [conda/conda#16518](https://github.com/conda/conda/pull/16518). The draft
 repodata and source-attestation formats may change incompatibly. Current conda

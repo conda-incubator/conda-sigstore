@@ -4,7 +4,8 @@
 It can also audit installed environments and, when explicitly enabled, reject a
 package before extraction when acceptable evidence is unavailable or invalid.
 
-The project is alpha software and is distributed through PyPI. The
+The project is alpha software, distributed through PyPI and the personal
+`jezdez` channel on Anaconda.org. The
 opt-in install integration requires the unreleased package-verifier API in
 [conda/conda#16518](https://github.com/conda/conda/pull/16518), and draft
 transport and source-evidence formats may still change incompatibly.
@@ -32,20 +33,17 @@ change before they can select the draft transport.
 conda-sigstore requires Python 3.11 or newer. Install it in the Python
 environment that owns the `conda` executable.
 
-conda 26.5 and newer include the
-[`conda-pypi`](https://conda.github.io/conda-pypi/quickstart/) plugin. For a
-standard conda installation, activate `base` and install 0.1.2 from PyPI as a
-conda package:
+For a standard conda installation, activate `base` and install 0.1.2 from the
+personal `jezdez` channel, with dependencies from conda-forge:
 
 ```console
 conda activate base
-conda pypi install "conda-sigstore==0.1.2"
+conda install --override-channels -c jezdez -c conda-forge "conda-sigstore=0.1.2"
 ```
 
-If `conda pypi` is not available, follow the
-[installation guide](https://jezdez.github.io/conda-sigstore/how-to/install/)
-to install the wheel with pip. The guide also documents the source preview and
-the separate requirements for install enforcement.
+The [installation guide](https://jezdez.github.io/conda-sigstore/how-to/install/)
+also documents PyPI installation, the source preview, and the separate
+requirements for install enforcement.
 
 ## Commands
 

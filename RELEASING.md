@@ -15,6 +15,10 @@ The PyPI Trusted Publisher uses these values:
 - Workflow: `release.yml`
 - Environment: `pypi`
 
+The repository Actions secret `ANACONDA_API_KEY` must allow uploads to the
+personal `jezdez` channel. The conda publishing job receives it only for the
+upload step.
+
 The GitHub Actions environment `pypi` permits deployments only from version
 tags and requires maintainer approval. Immutable releases are enabled, so a
 published release tag and its assets cannot be changed.
@@ -55,6 +59,7 @@ The tag starts this sequence:
 5. wait for approval of the `pypi` environment
 6. publish the distributions to PyPI through Trusted Publishing
 7. make the GitHub release public
+8. build, test, attest, and publish the conda package to `jezdez` on Anaconda.org
 
 ## Verify the release
 
@@ -132,3 +137,52 @@ that job.
 
 Never move a release tag or replace files for a published version. Prepare a
 new version and tag when an artifact must change after publication.
+
+## Publish to the personal conda channel
+
+The `Conda package` workflow builds a noarch Python package from the published PyPI
+source archive. Update its version and source SHA-256 for each release. Reset
+the build number to zero for a new version, or increment it when correcting
+the packaging of an existing version.
+
+The release workflow calls it after the GitHub release is public. To publish
+an existing release, dispatch it with the matching recipe version:
+
+```console
+gh workflow run conda.yml --ref main -f version=0.1.2 -f publish=true
+```
+
+Pull requests, main-branch pushes, and manual runs with `publish=false` only
+build and test the package. Publication checks that the built package matches
+the requested version, records GitHub provenance, and uploads the same artifact.
+
+Build and test the package with Rattler-Build:
+
+```console
+pixi run --locked -e release build-conda
+```
+
+The recipe checks imports on Python 3.11 and 3.14, Python dependency metadata,
+and command discovery with released conda. These checks do not enable the
+unreleased package-verifier integration. The recipe excludes pip's local
+source URL, and `--no-include-recipe` omits rendered build-directory metadata
+from the published archive. Keep the source recipe in Git.
+
+After explicit maintainer approval, upload the tested package using an
+Anaconda API key supplied through `ANACONDA_API_KEY` or Rattler's credential
+store:
+
+```console
+pixi run --locked -e release rattler-build upload anaconda --owner jezdez --channel main \
+  dist/conda/noarch/conda-sigstore-0.1.2-*.conda
+```
+
+Do not use `--force` to replace a published package. Confirm the uploaded
+filename and SHA-256 in the channel's repodata, then install it in a fresh
+environment:
+
+```console
+conda create --name conda-sigstore-check --override-channels \
+  --channel jezdez --channel conda-forge "conda-sigstore=0.1.2"
+conda run --name conda-sigstore-check conda sigstore --help
+```

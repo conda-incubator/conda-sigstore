@@ -7,6 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+
+- A noarch conda recipe and workflow that builds, tests, attests, and publishes
+  released source archives to the personal `jezdez` channel on Anaconda.org.
+
 ## [0.1.2] - 2026-09-10
 
 ### Fixed

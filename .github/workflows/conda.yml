@@ -1,0 +1,129 @@
+name: Conda package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/conda.yml"
+      - "recipe/**"
+      - "pyproject.toml"
+      - "pixi.lock"
+  pull_request:
+    paths:
+      - ".github/workflows/conda.yml"
+      - "recipe/**"
+      - "pyproject.toml"
+      - "pixi.lock"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Released version in recipe/recipe.yaml
+        type: string
+        required: true
+        default: "0.1.2"
+      publish:
+        description: Publish the tested package to jezdez on Anaconda.org
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      publish:
+        type: boolean
+        default: false
+    secrets:
+      ANACONDA_API_KEY:
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: conda-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and test conda package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: prefix-dev/setup-pixi@9dabb60412d3d2d967a8d682f7ce01317af40514 # v0.11.0
+        with:
+          pixi-version: v0.76.1
+          environments: release
+          cache: true
+      - name: Build from the lock file
+        run: pixi run --locked -e release build-conda
+      - name: Check package version before publication
+        if: inputs.publish
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Expected a canonical bare release version." >&2
+            exit 1
+          fi
+          shopt -s nullglob
+          packages=(dist/conda/noarch/*.conda)
+          if [[ "${#packages[@]}" -ne 1 || "${packages[0]}" != dist/conda/noarch/conda-sigstore-"${RELEASE_VERSION}"-*.conda ]]; then
+            echo "The conda package must match the requested release version." >&2
+            exit 1
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: conda-package
+          path: dist/conda/noarch/*.conda
+          if-no-files-found: error
+
+  attest:
+    name: Attest conda package
+    if: inputs.publish
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      artifact-metadata: write # Record metadata for the conda package.
+      attestations: write # Publish build provenance for the conda package.
+      contents: read
+      id-token: write # Sign provenance with GitHub's OIDC identity.
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: conda-package
+          path: dist/conda/
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: dist/conda/*.conda
+
+  publish:
+    name: Publish to Anaconda.org
+    needs: [attest]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: prefix-dev/setup-pixi@9dabb60412d3d2d967a8d682f7ce01317af40514 # v0.11.0
+        with:
+          pixi-version: v0.76.1
+          environments: release
+          cache: true
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: conda-package
+          path: dist/conda/
+      - name: Upload the tested package
+        env:
+          ANACONDA_API_KEY: ${{ secrets.ANACONDA_API_KEY }}
+        run: |
+          pixi run --locked -e release rattler-build upload anaconda \
+            --owner jezdez --channel main dist/conda/*.conda

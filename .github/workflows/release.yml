@@ -160,3 +160,18 @@ jobs:
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: gh release edit "$RELEASE_TAG" --repo "$GH_REPO" --draft=false
+
+  publish-conda:
+    name: Publish conda package
+    needs: [publish-github-release]
+    permissions:
+      artifact-metadata: write # Record metadata for the conda package.
+      attestations: write # Publish build provenance for the conda package.
+      contents: read
+      id-token: write # Sign provenance with GitHub's OIDC identity.
+    uses: $/.github/workflows/conda.yml
+    with:
+      version: ${{ github.ref_name }}
+      publish: true
+    secrets:
+      ANACONDA_API_KEY: ${{ secrets.ANACONDA_API_KEY }}

@@ -5,6 +5,23 @@
 discovered by that `conda` executable. The environment must use Python 3.11 or
 newer.
 
+## Install from Anaconda.org
+
+The personal [`jezdez` channel](https://anaconda.org/jezdez/conda-sigstore)
+provides the noarch conda package. Its dependencies come from conda-forge.
+For a standard conda installation, activate `base` and install 0.1.2:
+
+```console
+conda activate base
+conda install --override-channels -c jezdez -c conda-forge "conda-sigstore=0.1.2"
+conda sigstore --help
+```
+
+The help output should list `attest`, `verify`, and `audit`. Start with
+[Verify a public package](../tutorials/getting-started.md).
+
+## Install from PyPI with conda-pypi
+
 conda 26.5 and newer include the
 [`conda-pypi` plugin](https://conda.github.io/conda-pypi/quickstart/), which can
 download the published wheel from PyPI, convert it to a conda package, and
@@ -21,9 +38,6 @@ conda sigstore --help
 `conda pypi install` is pending removal in conda 27.9. If the command is not
 available, use the pip method below. The `conda-pypi` channel does not currently
 serve `conda-sigstore`.
-
-The help output should list `attest`, `verify`, and `audit`. Start with
-[Verify a public package](../tutorials/getting-started.md).
 
 ## Install with pip
 

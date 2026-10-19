@@ -165,6 +165,7 @@ hatch-vcs = ">=0.2.0"
 hatchling = ">=1.12.2"
 python = "3.13.*"
 python-build = ">=1.2"
+rattler-build = "==0.70.1"
 twine = ">=6.2"
 
 [tool.pixi.environments]
@@ -197,4 +198,5 @@ test-interop = {cmd = "pytest -o addopts= -ra -v -m live_interop tests/test_inte
 
 [tool.pixi.feature.release.tasks]
 build = {cmd = "python -m build --no-isolation", description = "Build sdist and wheel"}
+build-conda = {cmd = "rattler-build build --recipe recipe/recipe.yaml --channel conda-forge --output-dir dist/conda --no-include-recipe", description = "Build and test the conda package"}
 check-dist = {cmd = "python -m twine check --strict dist/*", description = "Check distribution metadata"}
