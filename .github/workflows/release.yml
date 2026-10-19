@@ -166,9 +166,9 @@ jobs:
     needs: [publish-github-release]
     permissions:
       artifact-metadata: write # Record metadata for the conda package.
-      attestations: write # Publish build provenance for the conda package.
+      attestations: write # Publish build and publication attestations.
       contents: read
-      id-token: write # Sign provenance with GitHub's OIDC identity.
+      id-token: write # Sign attestations with GitHub's OIDC identity.
     uses: $/.github/workflows/conda.yml
     with:
       version: ${{ github.ref_name }}

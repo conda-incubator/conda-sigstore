@@ -19,6 +19,9 @@ conda sigstore --help
 
 The help output should list `attest`, `verify`, and `audit`. Start with
 [Verify a public package](../tutorials/getting-started.md).
+For this project's own conda packages, see
+[Verify a conda-sigstore publication](verify-project-package.md), including
+which publications have CEP 27 evidence and how to retrieve it from GitHub.
 
 ## Install from PyPI with conda-pypi
 

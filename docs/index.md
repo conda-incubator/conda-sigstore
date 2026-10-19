@@ -75,6 +75,7 @@ tutorials/sign-package
 :caption: How-to guides
 
 how-to/install
+how-to/verify-project-package
 how-to/audit-environment
 how-to/configure-verification
 how-to/verify-locked-environments
