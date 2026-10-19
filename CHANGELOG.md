@@ -11,7 +11,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 - Documentation now identifies the repodata sidecar transport as accepted
   CEP 50 and distinguishes it from draft source attestations and the remaining
-  conda integration requirements.
+  conda integration requirements. The Prefix.dev guide identifies its separate
+  `.v0.sigs` compatibility transport.
 - Source audits now read Rattler-Build 0.77.0's rendered `recipe.source` and
   recognize its serialized GitHub and GitLab publishers. Publisher ref
   constraints that the auditor cannot enforce are rejected.

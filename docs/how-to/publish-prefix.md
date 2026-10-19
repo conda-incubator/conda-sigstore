@@ -160,4 +160,4 @@ Prefix.dev repodata does not pin the `.v0.sigs` bytes, so direct verification
 selects this transport explicitly.
 
 For the transport limitation and live fixture, see
-[Verify Prefix.dev sidecars](prefix-sidecars.md).
+[Verify Prefix.dev .v0.sigs sidecars](prefix-sidecars.md).
