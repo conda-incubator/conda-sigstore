@@ -22,6 +22,17 @@ def rattler_manifest() -> dict[str, str]:
 
 
 @pytest.fixture
+def rattler_source_recipe() -> dict[str, object]:
+    """Load the captured Rattler-Build rendered recipe."""
+    recipe = (
+        Path(__file__).with_name("fixtures")
+        / "rattler-build-source"
+        / "rendered_recipe.yaml"
+    )
+    return json.loads(recipe.read_text(encoding="utf-8"))
+
+
+@pytest.fixture
 def locked_conda_package(tmp_path: Path) -> tuple[Path, str, str, Path]:
     """Build one retained package for lockfile interoperability tests."""
     package_cache = tmp_path / "pkgs"

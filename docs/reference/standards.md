@@ -175,9 +175,18 @@ for declaring and preserving source attestations in recipes and built
 packages. It is separate from accepted CEP 27 publication statements.
 
 `conda sigstore audit --sources` implements an audit-only subset over retained
-package archives. The exact parser and bundle checks are documented in
-[Source-attestation audit format](source-attestations.md). Source evidence
-cannot authorize a CEP 27 publication signer.
+package archives. It reads Rattler-Build 0.77.0 declarations under
+`recipe.source` and their serialized GitHub and GitLab publisher mappings.
+It rejects unsupported ref constraints. See
+[Source-attestation audit format](source-attestations.md) for the parser and
+bundle checks.
+Source evidence cannot authorize a CEP 27 publication signer.
+
+Rattler-Build 0.77.0 verifies source downloads but does not export the bundles
+and recipe references this auditor needs. Supported declarations produce a
+`missing` source result. The auditor's embedded `verified` descriptors remain
+experimental. [Rattler-Build #2721](https://github.com/prefix-dev/rattler-build/pull/2721)
+covers remote attestation discovery and does not define how to export evidence.
 
 Generic SLSA Provenance v1 does not designate one resolved dependency as the
 source. The plugin reports all materials without guessing which one represents

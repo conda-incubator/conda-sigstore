@@ -281,9 +281,13 @@ def test_source_audit_requires_retained_archive(
     assert "archive" in str(report[0]["failure"])
 
 
+@pytest.mark.parametrize(
+    "rendered_publishers", [False, True], ids=["input", "rendered"]
+)
 def test_requires_every_recipe_publisher_and_ignores_index_claims(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    rendered_publishers: bool,
 ) -> None:
     first = "bundle-github"
     second = "bundle-gitlab"
@@ -297,11 +301,29 @@ def test_requires_every_recipe_publisher_and_ignores_index_claims(
         "https://gitlab.com/group/project/-/jobs/123",
         "https://gitlab.com",
     )
+    publishers = (
+        [
+            {
+                "provider": "github",
+                "owner": "example",
+                "repo": "project",
+                "ref_constraint": None,
+            },
+            {
+                "provider": "gitlab",
+                "owner": "group",
+                "repo": "project",
+                "ref_constraint": None,
+            },
+        ]
+        if rendered_publishers
+        else ["github:example/project", "gitlab:group/project"]
+    )
     report = source_audit(
         monkeypatch,
         tmp_path,
         rendered_recipe=recipe(
-            ["github:example/project", "gitlab:group/project"],
+            publishers,
             [indexed_bundle(first_path, first), indexed_bundle(second_path, second)],
         ),
         bundle_files={first_path: first, second_path: second},
@@ -313,6 +335,30 @@ def test_requires_every_recipe_publisher_and_ignores_index_claims(
     assert report["bundles"][0]["identity"] == github.identity
     assert report["bundles"][0]["predicate_type"] == PREDICATE_TYPE
     assert "authorization" not in report["bundles"][0]
+
+
+def test_rattler_rendered_source_without_retained_bundle_is_missing(
+    monkeypatch, tmp_path, rattler_source_recipe
+):
+    reports = source_audit(
+        monkeypatch,
+        tmp_path,
+        rendered_recipe=rattler_source_recipe,
+        bundle_files={},
+        identities={},
+    )
+    assert len(reports) == 1
+    report = reports[0]
+    assert report["status"] == "missing"
+    assert report["source_sha256"] == "a" * 64
+    assert report["required_publishers"] == [
+        {
+            "identity": "https://github.com/example/source-audit-fixture",
+            "issuer": GITHUB_ISSUER,
+        }
+    ]
+    assert report["matched_publishers"] == []
+    assert report["bundles"] == []
 
 
 def test_actual_signer_must_match_recipe_publisher(

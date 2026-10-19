@@ -1,0 +1,15 @@
+package:
+  name: source-audit-fixture
+  version: 1.0.0
+
+source:
+  url: https://example.invalid/source-audit-fixture-1.0.0.tar.gz
+  sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  attestation:
+    bundle_url: https://example.invalid/source-audit-fixture-1.0.0.sigstore.json
+    publishers:
+      - github:example/source-audit-fixture
+
+build:
+  noarch: generic
+  script: echo source-audit-fixture

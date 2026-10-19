@@ -7,6 +7,16 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Fixed
+
+- Source audits now read Rattler-Build 0.77.0's rendered `recipe.source` and
+  recognize its serialized GitHub and GitLab publishers. Publisher ref
+  constraints that the auditor cannot enforce are rejected.
+- Source audits now report missing retained bundles for Rattler-Build declarations. The
+  documentation explains the experimental embedded-evidence format and how it
+  differs from the builder's download verification. Full transparency-log
+  checks remain required.
+
 ## [0.1.3] - 2026-10-19
 
 ### Added

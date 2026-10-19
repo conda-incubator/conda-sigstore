@@ -1,0 +1,87 @@
+{
+  "recipe": {
+    "schema_version": 1,
+    "context": {},
+    "package": {
+      "name": "source-audit-fixture",
+      "version": "1.0.0"
+    },
+    "source": [
+      {
+        "url": "https://example.invalid/source-audit-fixture-1.0.0.tar.gz",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "attestation": {
+          "bundle_url": "https://example.invalid/source-audit-fixture-1.0.0.sigstore.json",
+          "publishers": [
+            {
+              "provider": "github",
+              "owner": "example",
+              "repo": "source-audit-fixture",
+              "ref_constraint": null
+            }
+          ]
+        }
+      }
+    ],
+    "build": {
+      "string": "h4616a5c_0",
+      "script": "echo source-audit-fixture",
+      "noarch": "generic"
+    },
+    "requirements": {}
+  },
+  "build_configuration": {
+    "target_platform": "noarch",
+    "host_platform": {
+      "platform": "linux-64",
+      "virtual_packages": [
+        "__unix=0=0",
+        "__linux=0=0",
+        "__archspec=1=x86_64"
+      ]
+    },
+    "build_platform": {
+      "platform": "linux-64",
+      "virtual_packages": [
+        "__unix=0=0",
+        "__linux=0=0",
+        "__archspec=1=x86_64"
+      ]
+    },
+    "variant": {
+      "target_platform": "noarch"
+    },
+    "hash": {
+      "hash": "4616a5c"
+    },
+    "directories": {
+      "host_prefix": "/fixture/build/host_prefix",
+      "build_prefix": "/fixture/build/build_prefix",
+      "work_dir": "/fixture/build/work_dir",
+      "build_dir": "/fixture/build/build_dir"
+    },
+    "channels": [
+      "https://conda.anaconda.org/conda-forge/"
+    ],
+    "channel_priority": "strict",
+    "solve_strategy": "highest",
+    "timestamp": "2026-01-01T00:00:00Z",
+    "subpackages": {
+      "source-audit-fixture": {
+        "name": "source-audit-fixture",
+        "version": "1.0.0",
+        "build_string": "h4616a5c_0"
+      }
+    },
+    "packaging_settings": {
+      "archive_type": "conda",
+      "compression_level": 15
+    }
+  },
+  "finalized_dependencies": null,
+  "finalized_sources": null,
+  "system_tools": {
+    "rattler-build": "0.77.0"
+  },
+  "extra_meta": {}
+}

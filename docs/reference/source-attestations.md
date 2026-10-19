@@ -7,6 +7,26 @@ is not an accepted CEP and its recipe and package layout may change.
 This page describes the current `conda-sigstore` parser. It is not a stable
 recipe-format standard.
 
+## Rattler-Build support
+
+Rattler-Build 0.77.0 accepts `bundle_url` and `publishers` in a source's
+[`attestation` declaration](https://github.com/prefix-dev/rattler-build/blob/v0.77.0/crates/rattler_build_recipe/src/stage0/parser/source.rs#L374).
+During download, it verifies sources and records an `attestation_verified` flag
+in its [source cache](https://github.com/prefix-dev/rattler-build/blob/v0.77.0/crates/rattler_build_source_cache/src/cache.rs#L332).
+The builder does not export the bundles and `verified` references needed by
+this auditor. The auditor cannot verify a source from a declaration or cache
+flag alone.
+
+The auditor reads source declarations and supported publisher forms from direct
+recipe mappings or Rattler-Build's serialized `BuildOutput`, where sources
+appear under `recipe.source`. Without retained bundle references, the source
+result is `missing`. Audits do not fetch `bundle_url` or discover
+remote attestations.
+
+[Rattler-Build #2721](https://github.com/prefix-dev/rattler-build/pull/2721) is
+an open pull request for attestation discovery on immutable GitHub release
+assets. It does not define how to export embedded evidence.
+
 ## Audit preconditions
 
 Source auditing runs for a package only when:
@@ -66,9 +86,9 @@ YAML aliases are rejected. The auditor checks YAML events and nesting before
 constructing the recipe mapping, then counts publisher and bundle declarations
 before constructing source-attestation requirements.
 
-## Rendered recipe declaration
+## Source declarations
 
-The rendered recipe may declare `attestation` on one or more URL sources:
+Rattler-Build recipe inputs can declare `attestation` on URL sources:
 
 ```yaml
 source:
@@ -77,32 +97,69 @@ source:
   attestation:
     publishers:
       - github:example/project
-      - identity: release@example.org
-        issuer: https://accounts.example.org
-    predicate_type: https://slsa.dev/provenance/v1
-    verified:
-      - path: attestations/project-1.0.0.sigstore.json
-        sha256: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    bundle_url: https://example.org/project-1.0.0.sigstore.json
 ```
 
-`source` may be one mapping or a list of mappings. A source without
-`attestation` is ignored.
+The corresponding serialized declaration uses publisher objects inside a
+`recipe` mapping:
 
-| Field | Required | Current parser contract |
+```yaml
+recipe:
+  source:
+    - url: https://github.com/example/project/archive/v1.0.0.tar.gz
+      sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      attestation:
+        publishers:
+          - provider: github
+            owner: example
+            repo: project
+            ref_constraint: null
+        bundle_url: https://example.org/project-1.0.0.sigstore.json
+```
+
+The auditor accepts either layout. `source` may be one mapping or a list of
+mappings. A source without `attestation` is ignored.
+
+`publishers` accepts a single shorthand string, such as
+`publishers: github:example/project`, or a nonempty list. Rattler-Build renders
+both forms as a list. Structured and explicit publisher mappings must appear
+as list items.
+
+| Field | Required | Parser behavior |
 | --- | --- | --- |
 | `source.url` | yes | Marks this as a URL source. `git` and `path` must be absent |
 | `source.sha256` | yes | 64 hexadecimal characters, normalized to lowercase |
-| `attestation.publishers` | yes | Nonempty list of publisher strings or explicit identity mappings |
-| `attestation.predicate_type` | no | Nonempty string that every counted embedded statement must match |
-| `attestation.verified` | no | List of embedded bundle descriptors, defaulting to an empty list |
+| `attestation.publishers` | yes | One supported shorthand string or a nonempty list of supported publisher strings or mappings |
+| `attestation.bundle_url` | no | Builder input, never fetched during audit |
 
-An empty or omitted `verified` list produces a `missing` source result. The
-auditor does not fetch `bundle_url`, derive PyPI Integrity API URLs, or convert
-PEP 740 responses. Those are builder-side parts of the draft proposal.
+Rattler-Build permits `bundle_url` without publisher constraints. The auditor
+still requires at least one publisher and a source SHA-256. Declarations that
+omit these audit inputs produce an `invalid` result.
+
+The experimental retained-evidence format below adds `predicate_type` and
+`verified`. Rattler-Build 0.77.0 does not accept these fields as recipe inputs
+or produce them in its rendered output.
 
 ## Publisher identities
 
-An explicit publisher contains exactly two fields:
+The auditor accepts these hosted-provider shorthands:
+
+| Shorthand | Identity expansion | Issuer expansion |
+| --- | --- | --- |
+| `github:OWNER/REPOSITORY` | `https://github.com/OWNER/REPOSITORY` | `https://token.actions.githubusercontent.com` |
+| `gitlab:NAMESPACE/REPOSITORY` | `https://gitlab.com/NAMESPACE/REPOSITORY` | `https://gitlab.com` |
+
+Rattler-Build's serialized publisher mappings contain `provider`, `owner`, and
+`repo` strings. They expand to the same identity and issuer as the shorthands.
+Only `github` and `gitlab` providers are supported. Nested repository paths are
+accepted.
+
+An `@REF` shorthand suffix or a non-null `ref_constraint` is rejected because
+the auditor cannot enforce those constraints. Omitting `ref_constraint` or
+setting it to null means no ref constraint.
+
+The experimental format also accepts an explicit publisher with exactly two
+fields:
 
 ```yaml
 identity: https://github.com/example/project
@@ -118,20 +175,32 @@ This lets a repository identity match its workflow SAN without also matching a
 similarly prefixed repository. Other identity forms, including email SANs, are
 compared exactly and case-sensitively.
 
-The parser also accepts two hosted-provider shorthands:
-
-| Shorthand | Identity expansion | Issuer expansion |
-| --- | --- | --- |
-| `github:OWNER/REPOSITORY` | `https://github.com/OWNER/REPOSITORY` | `https://token.actions.githubusercontent.com` |
-| `gitlab:NAMESPACE/REPOSITORY` | `https://gitlab.com/NAMESPACE/REPOSITORY` | `https://gitlab.com` |
-
-Nested repository paths are accepted. An `@REF` suffix is rejected because the
-draft does not yet define ref matching. Unknown providers are rejected.
-
 Every declared publisher must match at least one cryptographically verified
 embedded bundle.
 
-## Embedded bundle descriptor
+## Experimental retained evidence
+
+The auditor supports this experimental extension for retained source bundles.
+Released Rattler-Build output does not use this format:
+
+```yaml
+source:
+  url: https://github.com/example/project/archive/v1.0.0.tar.gz
+  sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  attestation:
+    publishers:
+      - github:example/project
+    predicate_type: https://slsa.dev/provenance/v1
+    verified:
+      - path: attestations/project-1.0.0.sigstore.json
+        sha256: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+```
+
+`predicate_type` is optional. When present, it must be a nonempty string and
+every embedded statement must match it. An empty or omitted `verified` list
+produces a `missing` source result.
+
+### Embedded bundle descriptor
 
 Each `attestation.verified` entry must provide:
 
@@ -140,7 +209,7 @@ path: attestations/project-1.0.0.sigstore.json
 sha256: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 ```
 
-| Field | Contract |
+| Field | Requirement |
 | --- | --- |
 | `path` | POSIX path relative to `info/recipe`, with exactly two components, first component `attestations`, and filename ending in `.sigstore.json` |
 | `sha256` | 64-character hexadecimal digest of the exact embedded file bytes |
@@ -169,9 +238,31 @@ Missing, invalid, or unavailable sibling bundles make the source result
 nonverified. When all bundles verify, every declared publisher must match an
 authenticated bundle signer.
 
-The auditor does not disable transparency-log verification for converted PyPI
-bundles because the embedded index has no authenticated conversion-provenance
-field.
+For converted PyPI PEP 740 responses, Rattler-Build 0.77.0
+[skips transparency-log verification](https://github.com/prefix-dev/rattler-build/blob/v0.77.0/crates/rattler_build_source_cache/src/sigstore.rs#L376-L382)
+because the conversion cannot reconstruct the canonical Rekor body. The
+auditor requires verifiable transparency-log and checkpoint material for every
+retained bundle. It rejects converted evidence that cannot satisfy those
+checks. The embedded index has no authenticated conversion-provenance field
+that could justify different verification rules.
+
+## Requirements for exporting evidence
+
+An independent source audit requires the builder to retain raw bundles in the
+package, including the certificates and transparency-log material needed for
+verification. The rendered recipe must reference each bundle's regular file
+and SHA-256. Each signed statement must bind the recipe source's SHA-256.
+
+The current auditor requires the paths and limits described above. A future
+export format must also permit bounded reads and reject unsafe paths and links.
+It must retain enough information to verify the original statement and signer.
+Reconstructing a bundle from PEP 740 data also needs authenticated conversion
+provenance and a defined way to verify its transparency evidence. A builder's
+successful verification flag is insufficient.
+
+The interoperability fixture covers a rendered Rattler-Build 0.77.0 declaration.
+Testing evidence exported by a real package build requires builder support for
+retaining that evidence.
 
 ## Result contract
 
