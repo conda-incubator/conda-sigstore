@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    outputs:
+      source-sha256: ${{ steps.source-digest.outputs.sha256 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -53,6 +55,15 @@ jobs:
             printf 'Found %s\n' "${files[@]}" >&2
             exit 1
           fi
+      - name: Record source archive digest
+        id: source-digest
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          digest=$(sha256sum "dist/conda_sigstore-${RELEASE_VERSION}.tar.gz")
+          printf 'sha256=%s\n' "${digest%% *}" >> "$GITHUB_OUTPUT"
       - name: Upload distributions
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -163,7 +174,7 @@ jobs:
 
   publish-conda:
     name: Publish conda package
-    needs: [publish-github-release]
+    needs: [build, publish-github-release]
     permissions:
       artifact-metadata: write # Record metadata for the conda package.
       attestations: write # Publish build and publication attestations.
@@ -172,6 +183,7 @@ jobs:
     uses: $/.github/workflows/conda.yml
     with:
       version: ${{ github.ref_name }}
+      source-sha256: ${{ needs.build.outputs.source-sha256 }}
       publish: true
     secrets:
       ANACONDA_API_KEY: ${{ secrets.ANACONDA_API_KEY }}

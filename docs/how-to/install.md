@@ -9,11 +9,11 @@ newer.
 
 The personal [`jezdez` channel](https://anaconda.org/jezdez/conda-sigstore)
 provides the noarch conda package. Its dependencies come from conda-forge.
-For a standard conda installation, activate `base` and install 0.1.2:
+For a standard conda installation, activate `base` and install 0.1.3:
 
 ```console
 conda activate base
-conda install --override-channels -c jezdez -c conda-forge "conda-sigstore=0.1.2"
+conda install --override-channels -c jezdez -c conda-forge "conda-sigstore=0.1.3"
 conda sigstore --help
 ```
 
@@ -30,11 +30,11 @@ conda 26.5 and newer include the
 download the published wheel from PyPI, convert it to a conda package, and
 install it into the environment that owns conda.
 
-For a standard conda installation, activate `base` and install 0.1.2 from PyPI:
+For a standard conda installation, activate `base` and install 0.1.3 from PyPI:
 
 ```console
 conda activate base
-conda pypi install "conda-sigstore==0.1.2"
+conda pypi install "conda-sigstore==0.1.3"
 conda sigstore --help
 ```
 
@@ -49,7 +49,7 @@ Create a dedicated environment that contains conda, pip, and the plugin:
 ```console
 conda create --name conda-sigstore "python>=3.11" conda pip
 conda activate conda-sigstore
-python -m pip install "conda-sigstore==0.1.2"
+python -m pip install "conda-sigstore==0.1.3"
 conda sigstore --help
 ```
 

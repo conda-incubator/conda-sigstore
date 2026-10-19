@@ -17,10 +17,14 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Released version in recipe/recipe.yaml
+        description: Released version to build
         type: string
         required: true
         default: "0.1.2"
+      source-sha256:
+        description: Source archive SHA-256, required to override the pinned recipe
+        type: string
+        required: false
       publish:
         description: Publish the tested package to jezdez on Anaconda.org
         type: boolean
@@ -30,6 +34,9 @@ on:
       version:
         type: string
         required: true
+      source-sha256:
+        type: string
+        required: false
       publish:
         type: boolean
         default: false
@@ -59,7 +66,21 @@ jobs:
           environments: release
           cache: true
       - name: Build from the lock file
-        run: pixi run --locked -e release build-conda
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_SOURCE_SHA256: ${{ inputs.source-sha256 }}
+        run: |
+          set -euo pipefail
+          if [[ -n "$RELEASE_SOURCE_SHA256" ]]; then
+            if [[ ! "$RELEASE_VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ || ! "$RELEASE_SOURCE_SHA256" =~ ^[0-9a-f]{64}$ ]]; then
+              echo "Source overrides require a canonical version and lowercase SHA-256." >&2
+              exit 1
+            fi
+            export CONDA_SIGSTORE_VERSION="$RELEASE_VERSION"
+            export CONDA_SIGSTORE_SOURCE_SHA256="$RELEASE_SOURCE_SHA256"
+          fi
+          pixi run --locked -e release build-conda
       - name: Check package version before publication
         if: inputs.publish
         shell: bash

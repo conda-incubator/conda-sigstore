@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-10-19
+
 ### Added
 
 - A noarch conda recipe and workflow that builds, tests, attests, and publishes
@@ -23,6 +25,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ### Changed
 
 - Updated CI to Pixi 0.82.0 and conda package builds to Rattler-Build 0.77.0.
+
+### Fixed
+
+- Pass the released source archive's version and SHA-256 to the conda build
+  so tag releases build the matching package instead of the recipe's pinned
+  version.
 
 ## [0.1.2] - 2026-09-10
 
@@ -114,7 +122,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Expanded the live Prefix interoperability check into a real strict
   pre-extraction installation followed by an environment audit.
 
-[Unreleased]: https://github.com/jezdez/conda-sigstore/compare/0.1.2...HEAD
+[Unreleased]: https://github.com/jezdez/conda-sigstore/compare/0.1.3...HEAD
+[0.1.3]: https://github.com/jezdez/conda-sigstore/compare/0.1.2...0.1.3
 [0.1.2]: https://github.com/jezdez/conda-sigstore/compare/0.1.1...0.1.2
 [0.1.1]: https://github.com/jezdez/conda-sigstore/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/jezdez/conda-sigstore/releases/tag/0.1.0
