@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import socket
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from conda.base.context import reset_context
 
 import conda_sigstore.cli.verify as cli_verify
 from conda_sigstore.evidence import (
@@ -14,6 +17,97 @@ from conda_sigstore.evidence import (
     VerifiedEvidence,
 )
 from conda_sigstore.exceptions import CondaSigstoreError, TransportError
+
+
+@pytest.fixture
+def rattler_publication(tmp_path, monkeypatch, rattler_manifest):
+    fixtures = Path(__file__).parents[1] / "fixtures" / "rattler"
+    artifact = tmp_path / rattler_manifest["package_filename"]
+    artifact.write_bytes((fixtures / rattler_manifest["package_filename"]).read_bytes())
+    bundle = json.loads(
+        (fixtures / rattler_manifest["sidecar_filename"]).read_text(encoding="utf-8")
+    )[0]
+    bundle_path = tmp_path / f"{artifact.name}.sigstore.json"
+    bundle_path.write_text(json.dumps(bundle) + "\n", encoding="utf-8")
+    condarc = tmp_path / "condarc"
+    condarc.write_text(
+        json.dumps(
+            {
+                "plugins": {
+                    "conda_sigstore": {
+                        "trust_config": str(
+                            fixtures / rattler_manifest["client_trust_config_filename"]
+                        )
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def fail_network(*args, **kwargs):
+        pytest.fail("publication verification must use frozen local trust material")
+
+    with monkeypatch.context() as patch:
+        patch.setenv("CONDARC", str(condarc))
+        patch.setenv("CONDA_OFFLINE", "true")
+        patch.setattr(socket, "getaddrinfo", fail_network)
+        patch.setattr(socket.socket, "connect", fail_network)
+        patch.setattr(socket.socket, "connect_ex", fail_network)
+        yield artifact, bundle_path
+    reset_context()
+
+
+@pytest.mark.parametrize(
+    ("change", "expected_status"),
+    [
+        ("valid", "verified"),
+        ("artifact-bytes", "invalid"),
+        ("channel", "invalid"),
+        ("identity", "untrusted-identity"),
+    ],
+)
+def test_verify_publication_bundle_requires_exact_artifact_channel_and_signer(
+    rattler_publication,
+    rattler_manifest,
+    conda_cli,
+    change,
+    expected_status,
+) -> None:
+    artifact, bundle_path = rattler_publication
+    channel = rattler_manifest["target_channel"]
+    identity = rattler_manifest["identity"]
+    issuer = rattler_manifest["issuer"]
+    if change == "artifact-bytes":
+        artifact.write_bytes(artifact.read_bytes() + b"changed")
+    elif change == "channel":
+        channel = "https://conda.anaconda.org/another-channel"
+    elif change == "identity":
+        identity = "https://github.com/example/project/.github/workflows/release.yml"
+    stdout, stderr, exit_code = conda_cli(
+        "sigstore",
+        "verify",
+        artifact,
+        "--bundle",
+        bundle_path,
+        "--channel",
+        channel,
+        "--cert-identity",
+        identity,
+        "--cert-oidc-issuer",
+        issuer,
+        "--json",
+    )
+
+    assert exit_code == (0 if change == "valid" else 1)
+    assert stderr == ""
+    report = json.loads(stdout)
+    assert report["status"] == expected_status
+    assert report["artifact"] == artifact.name
+    if change == "valid":
+        assert report["artifact_sha256"] == rattler_manifest["package_sha256"]
+        assert report["evidence"][0]["identity"] == identity
+        assert report["authorization"] == "verified"
 
 
 @pytest.mark.parametrize("output_option", [("--json",), ("--console", "json")])
