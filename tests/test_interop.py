@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import os
@@ -8,6 +9,14 @@ from typing import TYPE_CHECKING
 import pytest
 from conda.base.context import reset_context
 from conda.gateways.disk.read import compute_sum
+from rattler import (
+    ChannelCheck,
+    PackageRecord,
+    RepoDataRecord,
+    TrustedRoot,
+    VerificationPolicy,
+    verify_attestation,
+)
 
 from conda_sigstore.attestation import create_attestation
 from conda_sigstore.evidence import Sidecar, SignerIdentity, VerificationStatus
@@ -114,7 +123,12 @@ def test_sigstore_staging_round_trip_reports_authenticated_signer(tmp_path) -> N
     trust_config_path = tmp_path / "sigstore-staging.json"
     # sigstore-python 4.5 has no public ClientTrustConfig serializer. This
     # live-only round trip needs its exact combined trust-root and signing JSON.
-    trust_config_path.write_text(trust_config._inner.to_json(), encoding="utf-8")
+    config_json = trust_config._inner.to_json()
+    trust_config_path.write_text(config_json, encoding="utf-8")
+    trusted_root_path = tmp_path / "trusted-root.json"
+    trusted_root_path.write_text(
+        json.dumps(json.loads(config_json)["trustedRoot"]), encoding="utf-8"
+    )
 
     artifact = tmp_path / "conda-sigstore-staging-0-0.conda"
     artifact.write_bytes(b"conda-sigstore staging interoperability\n")
@@ -129,10 +143,11 @@ def test_sigstore_staging_round_trip_reports_authenticated_signer(tmp_path) -> N
         bundles=(bundle,),
     )
 
+    artifact_sha256 = compute_sum(artifact, "sha256")
     result = verify_bundles(
         sidecar,
         artifact_name=artifact.name,
-        artifact_sha256=compute_sum(artifact, "sha256"),
+        artifact_sha256=artifact_sha256,
         verifier=SigstoreVerifier(trust_config=trust_config_path),
         channel=STAGING_CHANNEL,
     )
@@ -142,3 +157,42 @@ def test_sigstore_staging_round_trip_reports_authenticated_signer(tmp_path) -> N
     assert result.evidence[0].verified
     assert result.to_dict()["authorization"] == "not-evaluated"
     assert "authorized" not in result.evidence[0].to_dict()
+
+    sidecar_bytes = json.dumps([json.loads(bundle)]).encode()
+    sidecar_sha256 = hashlib.sha256(sidecar_bytes).digest()
+    artifact.with_name(f"{artifact.name}.sigs.{sidecar_sha256.hex()}").write_bytes(
+        sidecar_bytes
+    )
+    record = RepoDataRecord(
+        PackageRecord(
+            name="conda-sigstore-staging",
+            version="0",
+            build="0",
+            build_number=0,
+            subdir="noarch",
+            sha256=bytes.fromhex(artifact_sha256),
+            attestations_sha256=sidecar_sha256,
+        ),
+        artifact.name,
+        artifact.as_uri(),
+        STAGING_CHANNEL,
+    )
+    native_result = asyncio.run(
+        verify_attestation(
+            record,
+            VerificationPolicy.require(channel_check=ChannelCheck.REQUIRE),
+            trusted_root=TrustedRoot.from_path(trusted_root_path),
+        )
+    )
+
+    assert native_result.is_verified
+    native_attestation = native_result.attestation
+    assert native_attestation is not None
+    assert native_attestation.identity == expected_identity
+    assert native_attestation.issuer == GITHUB_ISSUER
+    assert native_attestation.target_channel == STAGING_CHANNEL
+    assert native_attestation.index == 0
+    assert native_attestation.checks.certificate_chain
+    assert native_attestation.checks.signed_certificate_timestamp
+    assert native_attestation.checks.transparency_log
+    assert native_attestation.checks.inclusion_proof

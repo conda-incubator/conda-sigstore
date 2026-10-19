@@ -4,17 +4,21 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import conda_package_handling.api as package_handling
 import pytest
 from conda.base.constants import PACKAGE_CACHE_MAGIC_FILE
 from conda.base.context import context
 
-if TYPE_CHECKING:
-    from pathlib import Path
-
 pytest_plugins = ["conda.testing.fixtures"]
+
+
+@pytest.fixture(scope="module")
+def rattler_manifest() -> dict[str, str]:
+    """Describe the captured native publication and its frozen trust material."""
+    manifest = Path(__file__).with_name("fixtures") / "rattler" / "manifest.json"
+    return json.loads(manifest.read_text(encoding="utf-8"))
 
 
 @pytest.fixture

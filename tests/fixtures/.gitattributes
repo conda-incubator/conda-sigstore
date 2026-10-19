@@ -1,1 +1,2 @@
 *.sigs text eol=lf
+rattler/*.json text eol=lf

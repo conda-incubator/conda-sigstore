@@ -57,6 +57,12 @@ separate and producer-oriented. `pixi publish --generate-attestation` and
 Prefix.dev. The Pixi security guide directs consumers to external Sigstore
 tools instead of claiming that `pixi install` verifies those attestations.
 
+Rattler also exposes a native verifier through the released `py-rattler`
+binding. This project uses it as a test-only consumer, including configured
+local trust roots. See [Pixi and Rattler interoperability](../reference/interoperability.md)
+for tested versions, transport support, and the separate live signing check.
+This does not change Pixi's installation behavior described above.
+
 The closest existing consumer pattern is PyPI's separate
 `pypi-attestations verify pypi --repository ...` command. The repository is an
 independent trust input. `conda sigstore verify` offers the corresponding
