@@ -69,6 +69,13 @@ and a retained archive. See
 [Source-attestation declarations](../reference/source-attestations.md) for the
 recipe syntax, supported publisher forms, path rules, and result fields.
 
+Rattler-Build 0.77.0 declarations are recognized in `recipe.source`, including
+its serialized publisher mappings. The builder does not retain the bundles
+needed for an independent audit, so supported declarations produce a `missing`
+source result. Audits do not fetch the declared `bundle_url`. A verified source
+result requires the experimental embedded-evidence format described in the
+reference.
+
 The auditor checks a temporary archive snapshot against the verified package
 digest and reads only regular recipe and embedded-bundle files. It does not
 perform general package extraction. Packages that exceed the

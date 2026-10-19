@@ -12,6 +12,10 @@ import pytest
 
 from conda_sigstore.evidence import SignerIdentity, VerificationStatus
 from conda_sigstore.exceptions import TransportError
+from conda_sigstore.source_attestations import (
+    EmbeddedSourceBundle,
+    SourceAttestationRequirement,
+)
 from conda_sigstore.statements import PublishStatement
 from conda_sigstore.transport import SidecarTransport
 from conda_sigstore.verification import SigstoreVerifier, verify_bundles
@@ -217,3 +221,71 @@ def test_rattler_repodata_transport_rejects_changed_sidecar_bytes(
             rattler_manifest["package_url"], rattler_manifest["sidecar_sha256"]
         )
     assert raised.value.code == "digest-mismatch"
+
+
+@pytest.mark.parametrize(
+    "transparency_material",
+    [
+        "complete",
+        "missing-body",
+        "empty-body",
+        "missing-checkpoint",
+        "tampered-checkpoint",
+    ],
+)
+def test_source_audit_requires_complete_authenticated_transparency_material(
+    tmp_path: Path,
+    rattler_manifest: dict[str, str],
+    rattler_body: bytes,
+    rattler_verifier: SigstoreVerifier,
+    transparency_material: str,
+) -> None:
+    # This captured CEP 27 bundle tests source verification, not PEP 740 conversion.
+    bundle = json.loads(rattler_body)[0]
+    entry = bundle["verificationMaterial"]["tlogEntries"][0]
+    if transparency_material == "missing-body":
+        del entry["canonicalizedBody"]
+    elif transparency_material == "empty-body":
+        entry["canonicalizedBody"] = ""
+    elif transparency_material == "missing-checkpoint":
+        del entry["inclusionProof"]["checkpoint"]
+    elif transparency_material == "tampered-checkpoint":
+        checkpoint = entry["inclusionProof"]["checkpoint"]
+        lines = checkpoint["envelope"].splitlines(keepends=True)
+        lines[1] = f"{int(lines[1]) + 1}\n"
+        checkpoint["envelope"] = "".join(lines)
+    body = json.dumps(bundle).encode()
+    embedded = tmp_path / "attestations" / "source.sigstore.json"
+    embedded.parent.mkdir()
+    embedded.write_bytes(body)
+    publisher = SignerIdentity(rattler_manifest["identity"], rattler_manifest["issuer"])
+    requirement = SourceAttestationRequirement(
+        source_index=0,
+        source_sha256=rattler_manifest["package_sha256"],
+        publishers=(publisher,),
+        predicate_type=PublishStatement.PREDICATE_TYPE,
+        # Rebind the descriptor so failures come from verification, not file hashing.
+        bundles=(
+            EmbeddedSourceBundle(
+                path="attestations/source.sigstore.json",
+                sha256=hashlib.sha256(body).hexdigest(),
+            ),
+        ),
+    )
+
+    result = requirement.audit(
+        tmp_path,
+        verifier=rattler_verifier,
+        max_bytes=len(body),
+    )
+
+    if transparency_material == "complete":
+        assert result["status"] == "verified", result
+        assert result["matched_publishers"] == [publisher.to_dict()]
+        assert result["bundles"][0]["status"] == "verified"
+        assert result["bundles"][0]["predicate_type"] == PublishStatement.PREDICATE_TYPE
+    else:
+        assert result["status"] == "invalid", result
+        assert result["matched_publishers"] == []
+        assert result["bundles"][0]["status"] == "invalid"
+        assert result["bundles"][0]["failure"]

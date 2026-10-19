@@ -203,15 +203,35 @@ class SourceAttestationRequirement:
 
     @staticmethod
     def publisher(value: object) -> SignerIdentity:
-        """Expand one explicit or draft shorthand publisher identity."""
+        """Read an explicit identity or a supported recipe publisher."""
         if isinstance(value, Mapping):
-            if set(value) != {"identity", "issuer"}:
-                raise ValueError("publisher mappings require identity and issuer")
-            identity = value["identity"]
-            issuer = value["issuer"]
-            if not isinstance(identity, str) or not isinstance(issuer, str):
-                raise ValueError("publisher identity and issuer must be strings")
-            return SignerIdentity(identity, issuer)
+            if "provider" not in value:
+                if set(value) != {"identity", "issuer"}:
+                    raise ValueError("publisher mappings require identity and issuer")
+                identity = value["identity"]
+                issuer = value["issuer"]
+                if not isinstance(identity, str) or not isinstance(issuer, str):
+                    raise ValueError("publisher identity and issuer must be strings")
+                return SignerIdentity(identity, issuer)
+            fields = {"provider", "owner", "repo"}
+            if not fields <= value.keys() or value.keys() - fields - {"ref_constraint"}:
+                raise ValueError(
+                    "rendered publisher mappings require provider, owner, and repo"
+                )
+            if value.get("ref_constraint") is not None:
+                raise ValueError("publisher ref constraints are not supported")
+            provider, owner, repository = (
+                value["provider"],
+                value["owner"],
+                value["repo"],
+            )
+            if not all(
+                isinstance(part, str) and part for part in (provider, owner, repository)
+            ):
+                raise ValueError(
+                    "publisher provider, owner, and repo must be nonempty strings"
+                )
+            value = f"{provider}:{owner}/{repository}"
         if not isinstance(value, str) or not value:
             raise ValueError("publishers must contain strings or mappings")
         shorthand, separator, _ref = value.partition("@")
@@ -251,8 +271,10 @@ class SourceAttestationRequirement:
         if "url" not in source or "git" in source or "path" in source:
             raise ValueError("source attestations require a URL source")
         raw_publishers = raw_attestation.get("publishers")
-        if not isinstance(raw_publishers, Sequence) or isinstance(raw_publishers, str):
-            raise ValueError("attestation.publishers must be a list")
+        if isinstance(raw_publishers, str):
+            raw_publishers = [raw_publishers]
+        if not isinstance(raw_publishers, Sequence):
+            raise ValueError("attestation.publishers must be a string or list")
         if len(raw_publishers) > MAX_SOURCE_PUBLISHERS:
             raise ValueError("too many source attestation publishers")
         publishers = tuple(cls.publisher(item) for item in raw_publishers)
@@ -287,6 +309,17 @@ class SourceAttestationRequirement:
         rendered_recipe: Mapping[str, object],
     ) -> tuple[SourceAttestationRequirement, ...]:
         """Parse every source-attestation requirement in a rendered recipe."""
+        if "recipe" in rendered_recipe:
+            if "source" in rendered_recipe:
+                raise ValueError(
+                    "rendered output must not contain both recipe and source"
+                )
+            recipe = rendered_recipe["recipe"]
+            if not isinstance(recipe, Mapping):
+                raise ValueError("rendered output recipe must be an object")
+            if "recipe" in recipe:
+                raise ValueError("nested recipe wrappers are not supported")
+            rendered_recipe = recipe
         raw_sources = rendered_recipe.get("source", ())
         if isinstance(raw_sources, Mapping):
             sources: Sequence[object] = (raw_sources,)
@@ -308,6 +341,8 @@ class SourceAttestationRequirement:
                 values = attestation.get(field, ())
                 if isinstance(values, Sequence) and not isinstance(values, str):
                     declarations += len(values)
+                elif field == "publishers" and isinstance(values, str):
+                    declarations += 1
             if declarations > MAX_RECIPE_DECLARATIONS:
                 raise ValueError("too many source attestation declarations in recipe")
         requirements: list[SourceAttestationRequirement] = []
