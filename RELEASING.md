@@ -160,7 +160,7 @@ gh workflow run conda.yml --ref main -f version=0.1.3 \
 
 Set `SOURCE_SHA256` from the source distribution checked in
 [Verify the release](#verify-the-release). Without a `source-sha256` override,
-the workflow builds the recipe's pinned source, currently 0.1.2. Publication
+the workflow builds the recipe's pinned source, currently 0.1.3. Publication
 then requires a requested version matching that pin. Update both recipe pins
 after a release to make it the default for local and CI builds.
 
