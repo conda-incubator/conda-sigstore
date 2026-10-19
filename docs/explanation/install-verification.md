@@ -17,7 +17,7 @@ source links identify the exact Pixi and uv revisions reviewed.
 | uv | Records selected index hashes in `uv.lock` and verifies hashes supplied in requirements files. `--require-hashes` requires complete hash coverage. | None. `uv publish` discovers and uploads adjacent PEP 740 attestations, but does not generate them or verify them during installation. |
 | npm | Uses `package-lock.json` to select exact dependency versions and records Subresource Integrity values for downloaded artifacts. | None. `npm audit signatures` is a separate command that verifies registry signatures and available provenance attestations after dependencies are installed. |
 | Pixi | Verifies conda and PyPI package checksums recorded in `pixi.lock` when an artifact is installed or reused from cache. | None. Pixi creates or uploads Sigstore attestations for Prefix.dev publishing and documents external consumer verification with `gh` or `cosign`. |
-| conda with conda-sigstore | Conda retains its package digest checks. | An opt-in direct package verifier requires valid CEP 27 evidence from a repodata-hash-pinned immutable sidecar or the separate deterministic Prefix.dev adjacent sidecar. PR 142 selection also needs conda to preserve `attestations_sha256`. It is an integration preview against conda/conda#16518. |
+| conda with conda-sigstore | Conda retains its package digest checks. | An opt-in direct package verifier requires valid CEP 27 evidence from a repodata-hash-pinned immutable sidecar or the separate deterministic Prefix.dev adjacent sidecar. Selecting the repodata-advertised sidecar also requires conda to preserve `attestations_sha256`. It is an integration preview against conda/conda#16518. |
 
 The relevant primary documentation is:
 
@@ -112,7 +112,7 @@ build a pinned revision from `jezdez/conda`'s `feature/package-verifiers`
 branch as a conda package. No released conda version provides that API yet.
 
 The current conda `PackageRecord` model and solver conversion paths do not
-preserve PR 142's `attestations_sha256` field. A separate conda change is
+preserve CEP 50's `attestations_sha256` field. A separate conda change is
 required before real solver and install flows can select
 `<artifact>.sigs.<attestations_sha256>`. The adjacent Prefix.dev `.v0.sigs`
 compatibility path needs only the selected package URL and digest. A rejection

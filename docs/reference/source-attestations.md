@@ -3,6 +3,8 @@
 `conda sigstore audit --sources` implements an audit-only subset of the open
 [conda/ceps#168](https://github.com/conda/ceps/pull/168) proposal. The proposal
 is not an accepted CEP and its recipe and package layout may change.
+Accepted [CEP 50](https://github.com/conda/ceps/blob/main/cep-0050.md) covers
+sidecar distribution and does not standardize this embedded source evidence.
 
 This page describes the current `conda-sigstore` parser. It is not a stable
 recipe-format standard.

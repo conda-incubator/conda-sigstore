@@ -1,13 +1,14 @@
 # Standards and formats
 
-`conda-sigstore` implements one accepted conda statement format alongside
-draft and service-specific transport and source-evidence formats.
+`conda-sigstore` implements accepted CEP 27 publication statements and CEP 50
+sidecar distribution. It also supports Prefix.dev's compatibility transport
+and draft source-attestation evidence.
 
 | Contract | Status | Use in this plugin |
 | --- | --- | --- |
 | [CEP 27](https://github.com/conda/ceps/blob/main/cep-0027.md) publication statement | Accepted CEP | Required package statement |
 | [Sigstore Bundle v0.3](https://github.com/sigstore/protobuf-specs/blob/main/protos/sigstore_bundle.proto) | Published Sigstore format | Signed evidence container |
-| [conda/ceps#142](https://github.com/conda/ceps/pull/142) served sidecars | Open proposal | Draft repodata transport |
+| [CEP 50](https://github.com/conda/ceps/blob/main/cep-0050.md) sidecar distribution | Accepted CEP | Repodata transport, pending conda metadata propagation |
 | Prefix.dev `.v0.sigs` | Current service-specific behavior | Compatibility transport |
 | [conda/ceps#168](https://github.com/conda/ceps/pull/168) source attestations | Open proposal | Audit-only embedded source evidence |
 
@@ -88,12 +89,11 @@ See [Verify with sigstore-python](../how-to/verify-with-sigstore.md) and
 [Publish attestations to Prefix.dev](../how-to/publish-prefix.md) for operator
 workflows.
 
-## Draft repodata sidecar transport
+## CEP 50 repodata sidecar transport
 
-[conda/ceps#142](https://github.com/conda/ceps/pull/142) is an open proposal
-for distributing attestation sidecars. This implementation follows proposal
-commit `241d1cf43f4db5af484be59ad0b840a1b9e5d616` and calls the protocol the
-`repodata` transport.
+[CEP 50](https://github.com/conda/ceps/blob/main/cep-0050.md) was accepted on
+23 September 2026. It defines attestation sidecar distribution, called the
+`repodata` transport in this plugin.
 
 For `example-1.0-0.conda`, a channel serves the same exact sidecar bytes at two
 URLs:
@@ -133,11 +133,11 @@ Invalid-field, retrieval, streaming-limit, digest, container, or verification
 failure does not fall back to `.v0.sigs`.
 
 CEP 27 defines verification of publication statements, including filename and
-SHA-256 binding. The distribution proposal adds no verification rules. The
+SHA-256 binding. CEP 50 adds no publication-statement verification rules. The
 reported `bundle_index` identifies evidence within the sidecar and implies no
 trust, freshness, or preference.
 
-The proposal also defines channel requirements for preserving accepted bundles
+CEP 50 also defines channel requirements for preserving accepted bundles
 and publishing concurrent additions. See
 [Channel sidecar publication](channel-sidecar-publication)
 for the ordering and publication rules.
@@ -147,8 +147,11 @@ preserve `attestations_sha256`. A conda change is therefore required before
 real solver, install, package-cache, prefix-record, and installed-audit flows
 can select this transport.
 
-The proposal remains Draft, so this transport may require an incompatible
-change before a stable release.
+CEP 50 leaves trusted signer identities, TOFU, lockfile policy, and install
+enforcement to separate specifications or tool policy. It does not define
+upload authorization or channel admission rules. Its acceptance does not
+provide conda's unreleased package-verifier hook or the metadata propagation
+needed by this plugin.
 
 ## Prefix.dev compatibility transport
 
@@ -160,9 +163,8 @@ in repodata.
 Explicit `.v0.sigs` input keeps the weaker discovery and integrity model
 visible in verification and audit commands. The opt-in install verifier also
 uses this deterministic adjacent name when the selected repodata record has no
-`attestations_sha256` field. That fallback is plugin policy outside PR 142, not
-an older revision of its transport. It first binds the signed CEP 27 statement
-to the package SHA-256 supplied by conda.
+`attestations_sha256` field. That fallback is plugin policy outside CEP 50.
+It binds the signed CEP 27 statement to the package SHA-256 supplied by conda.
 
 Public client behavior does not establish whether the proprietary Prefix.dev
 server compares a bundle signer with the upload identity. The plugin reports
@@ -172,7 +174,8 @@ the authenticated signer without claiming that Prefix.dev authorized it.
 
 [conda/ceps#168](https://github.com/conda/ceps/pull/168) is an open proposal
 for declaring and preserving source attestations in recipes and built
-packages. It is separate from accepted CEP 27 publication statements.
+packages. It remains a draft, separate from accepted CEP 27 publication
+statements and CEP 50 sidecar distribution.
 
 `conda sigstore audit --sources` implements an audit-only subset over retained
 package archives. It reads Rattler-Build 0.77.0 declarations under

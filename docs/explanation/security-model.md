@@ -25,15 +25,15 @@ Cryptographic verification depends on:
 - supported transparency-log, checkpoint, and timestamp verification material
 - SHA-256 binding between the CEP 27 subject and package bytes
 
-Repodata can additionally bind exact sidecar bytes through
-`attestations_sha256`. The immutable `.sigs.<sha256>` URL prevents cache races
-between sidecar revisions. This binding is only as strong as the channel
-metadata path, including TLS.
+Accepted [CEP 50](https://github.com/conda/ceps/blob/main/cep-0050.md) lets repodata
+bind exact sidecar bytes through `attestations_sha256`. The immutable
+`.sigs.<sha256>` URL prevents cache races between sidecar revisions. This
+binding is only as strong as the channel metadata path, including TLS.
 
 Current conda `PackageRecord` objects do not preserve `attestations_sha256`, so
-the PR 142 transport cannot protect real solver, install, or installed-audit
+the CEP 50 transport cannot protect real solver, install, or installed-audit
 flows until conda adds that field. Prefix.dev `.v0.sigs` compatibility does not
-gain a repodata hash commitment from this proposal.
+gain a repodata hash commitment from CEP 50.
 
 A channel server's claim that an uploader was authorized is not currently a
 trust anchor. The observed public client paths are documented in

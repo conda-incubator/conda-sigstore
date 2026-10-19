@@ -34,13 +34,13 @@ Remove-Item Env:CONDA_PLUGINS_CONDA_SIGSTORE_ENFORCE
 ::::
 
 Replace `PACKAGE` with a package from a channel that serves valid adjacent
-Prefix.dev evidence or a PR 142 content-addressed sidecar advertised through
+Prefix.dev evidence or a CEP 50 content-addressed sidecar advertised through
 `attestations_sha256`. Missing or invalid evidence blocks the package before
 extraction.
 
 Current conda `PackageRecord` objects and solver conversion paths do not
 preserve `attestations_sha256`. Real solver and install flows need a conda
-change before they can select the PR 142 sidecar. Until then, enforcement can
+change before they can select the CEP 50 sidecar. Until then, enforcement can
 use only the separate adjacent Prefix.dev `.v0.sigs` compatibility path.
 
 ## Enable enforcement persistently

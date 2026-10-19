@@ -25,8 +25,9 @@ Packages without a retained archive report `record-digest-only`.
 
 ## Audit repodata-advertised evidence
 
-The default mode uses only a draft `attestations_sha256` field preserved on the
-installed package record:
+The default mode requires the installed package record to preserve the
+`attestations_sha256` field defined by accepted
+[CEP 50](https://github.com/conda/ceps/blob/main/cep-0050.md):
 
 ```console
 conda sigstore audit -n runtime --json
@@ -40,7 +41,7 @@ does not probe either the mutable `.sigs` URL or an adjacent `.v0.sigs` file.
 
 Current conda `PackageRecord` objects and solver conversion paths do not
 preserve `attestations_sha256`. Real installed-environment audits need a conda
-change before they can select the PR 142 transport, even when a channel already
+change before they can select the CEP 50 transport, even when a channel already
 publishes the immutable sidecar.
 
 ## Audit Prefix.dev evidence

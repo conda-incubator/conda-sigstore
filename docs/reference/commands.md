@@ -29,8 +29,9 @@ during the OIDC and signing flow cannot produce a successful command.
 
 The output is a single bundle object. Channel tooling wraps one or more
 complete bundle objects in the JSON array served byte-for-byte at mutable
-`<PACKAGE>.sigs` and immutable `<PACKAGE>.sigs.<sha256>` for the PR 142
-transport. The current Prefix.dev compatibility transport instead uses
+`<PACKAGE>.sigs` and immutable `<PACKAGE>.sigs.<sha256>` for the
+[CEP 50](https://github.com/conda/ceps/blob/main/cep-0050.md) transport.
+The current Prefix.dev compatibility transport uses
 `<PACKAGE>.v0.sigs`.
 
 ## `conda sigstore verify`
@@ -120,7 +121,7 @@ not probed and reports `missing`.
 
 Current conda `PackageRecord` objects and solver conversion paths do not
 preserve `attestations_sha256`. Real installed-environment audits therefore
-need a conda change before they can select the PR 142 transport. An audit can
+need a conda change before they can select the CEP 50 transport. An audit can
 report `missing` even when a channel serves the immutable sidecar.
 
 `--prefix-sidecars` explicitly selects Prefix.dev's current, repodata-unpinned
@@ -147,7 +148,7 @@ CONDA_PLUGINS_CONDA_SIGSTORE_ENFORCE=true conda install PACKAGE
 ```
 
 Enabled verification rejects a package unless its selected evidence verifies.
-The PR 142 path also requires conda to preserve `attestations_sha256` on the
+The CEP 50 path also requires conda to preserve `attestations_sha256` on the
 selected `PackageRecord`. Until conda adds that support, solver and install
 flows select the separate adjacent Prefix.dev compatibility path when the field
 is absent.

@@ -63,9 +63,9 @@ in [conda/conda#16518](https://github.com/conda/conda/pull/16518). Released
 conda versions can load the other plugin commands, but they cannot enable that
 install hook.
 
-Current conda `PackageRecord` objects also do not preserve PR 142's
+Current conda `PackageRecord` objects also do not preserve CEP 50's
 `attestations_sha256` field. A corresponding conda change is required before
-real solver and install flows can select the draft content-addressed sidecar.
+real solver and install flows can select its content-addressed sidecar.
 `plugins.conda_sigstore_enforce` remains false by default.
 :::
 
@@ -89,7 +89,7 @@ replaces the pip bootstrap entry point inside `.pixi/envs/test` with conda's
 normal command wrappers. It does not initialize your shell profile.
 
 The locked environment builds a pinned revision from `jezdez/conda`'s
-`feature/package-verifiers` branch, the branch behind the draft hook pull
+`feature/package-verifiers` branch, the branch behind the unreleased hook pull
 request, as a conda package.
 
 Exit the preview shell when finished:

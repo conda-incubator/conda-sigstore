@@ -7,8 +7,8 @@ package before extraction when acceptable evidence is unavailable or invalid.
 The project is alpha software, distributed through PyPI and the personal
 `jezdez` channel on Anaconda.org. The
 opt-in install integration requires the unreleased package-verifier API in
-[conda/conda#16518](https://github.com/conda/conda/pull/16518), and draft
-transport and source-evidence formats may still change incompatibly.
+[conda/conda#16518](https://github.com/conda/conda/pull/16518). The draft
+source-evidence formats may still change incompatibly.
 
 ## What it does
 
@@ -18,15 +18,15 @@ transport and source-evidence formats may still change incompatibly.
 - Audit installed packages for publication, provenance, and recipe source
   evidence.
 - Require valid CEP 27 evidence before conda extracts a package.
-- Read the draft repodata-advertised immutable `.sigs.<sha256>` transport and,
+- Read CEP 50 repodata-advertised immutable `.sigs.<sha256>` sidecars and,
   separately, Prefix.dev's current `.v0.sigs` convention.
 
-The draft transport follows
-[conda/ceps#142](https://github.com/conda/ceps/pull/142) at commit
-`241d1cf43f4db5af484be59ad0b840a1b9e5d616`. Current conda `PackageRecord`
-objects do not preserve its `attestations_sha256` field, so real solver,
-install, and installed-environment audit flows require a corresponding conda
-change before they can select the draft transport.
+The repodata transport follows accepted
+[CEP 50](https://github.com/conda/ceps/blob/main/cep-0050.md). Current conda
+`PackageRecord` objects do not preserve its `attestations_sha256` field, so
+real solver, install, and installed-environment audit flows require a
+corresponding conda change before they can select this transport. CEP 50
+does not define trusted signer identities or install enforcement policy.
 
 ## Install
 
