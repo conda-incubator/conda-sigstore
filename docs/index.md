@@ -92,6 +92,7 @@ reference/commands
 reference/configuration
 reference/json-output
 reference/library-api
+reference/interoperability
 reference/source-attestations
 reference/standards
 reference/upstream-contracts

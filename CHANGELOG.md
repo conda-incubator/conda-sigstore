@@ -12,6 +12,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - A noarch conda recipe and workflow that builds, tests, attests, and publishes
   released source archives to the personal `jezdez` channel on Anaconda.org.
 
+- Offline interoperability tests with a captured Rattler-Build publication and
+  the released `py-rattler` verifier, plus Python-to-Rust verification in the
+  existing opt-in Sigstore staging check.
+
+### Changed
+
+- Updated CI to Pixi 0.82.0 and conda package builds to Rattler-Build 0.77.0.
+
 ## [0.1.2] - 2026-09-10
 
 ### Fixed
