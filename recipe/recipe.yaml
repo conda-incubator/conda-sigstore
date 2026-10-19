@@ -1,5 +1,5 @@
 context:
-  version: "0.1.2"
+  version: ${{ env.get("CONDA_SIGSTORE_VERSION", default="0.1.2") }}
 
 package:
   name: conda-sigstore
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/c/conda-sigstore/conda_sigstore-${{ version }}.tar.gz
-  sha256: c15f35be76fabb58f338c43c59fe047bbdfb03309dc14f7d9494cf68207b8c82
+  sha256: ${{ env.get("CONDA_SIGSTORE_SOURCE_SHA256", default="c15f35be76fabb58f338c43c59fe047bbdfb03309dc14f7d9494cf68207b8c82") }}
 
 build:
   number: 0

@@ -23,7 +23,7 @@ The GitHub Actions environment `pypi` permits deployments only from version
 tags and requires maintainer approval. Immutable releases are enabled, so a
 published release tag and its assets cannot be changed.
 
-## Prepare 0.1.2
+## Prepare 0.1.3
 
 1. Update `CHANGELOG.md`, `CITATION.cff`, and installation documentation with
    the version and release date.
@@ -41,25 +41,27 @@ published release tag and its assets cannot be changed.
 Preparation ends after those checks. Publishing requires explicit maintainer
 approval, followed by the tag below.
 
-## Publish 0.1.2
+## Publish 0.1.3
 
 Create and push an annotated bare version tag:
 
 ```console
-git tag -a 0.1.2 -m "conda-sigstore 0.1.2"
-git push origin 0.1.2
+git tag -a 0.1.3 -m "conda-sigstore 0.1.3"
+git push origin 0.1.3
 ```
 
 The tag starts this sequence:
 
-1. build the wheel and source distribution once
+1. build the wheel and source distribution once and record the source SHA-256
 2. check the distribution metadata
 3. record GitHub build provenance
 4. create a draft GitHub release and attach the distributions
 5. wait for approval of the `pypi` environment
 6. publish the distributions to PyPI through Trusted Publishing
 7. make the GitHub release public
-8. build, test, attest, and publish the conda package to `jezdez` on Anaconda.org
+8. pass the version and source SHA-256 to the conda workflow, which downloads
+   the source distribution from PyPI and checks its digest
+9. build, test, attest, and publish the conda package to `jezdez` on Anaconda.org
 
 ## Verify the release
 
@@ -69,17 +71,17 @@ GitHub's build provenance and PyPI's publish attestations:
 ```console
 set -euo pipefail
 release_check="$(mktemp -d)"
-gh release download 0.1.2 --repo jezdez/conda-sigstore \
+gh release download 0.1.3 --repo jezdez/conda-sigstore \
   --dir "$release_check/github"
 mkdir "$release_check/pypi"
 curl --fail --location --silent --show-error \
-  https://pypi.org/pypi/conda-sigstore/0.1.2/json \
+  https://pypi.org/pypi/conda-sigstore/0.1.3/json \
   --output "$release_check/pypi.json"
 wheel_url="$(jq -er \
-  '.urls[] | select(.filename == "conda_sigstore-0.1.2-py3-none-any.whl") | .url' \
+  '.urls[] | select(.filename == "conda_sigstore-0.1.3-py3-none-any.whl") | .url' \
   "$release_check/pypi.json")"
 sdist_url="$(jq -er \
-  '.urls[] | select(.filename == "conda_sigstore-0.1.2.tar.gz") | .url' \
+  '.urls[] | select(.filename == "conda_sigstore-0.1.3.tar.gz") | .url' \
   "$release_check/pypi.json")"
 if [[ "$wheel_url" != https://files.pythonhosted.org/* ]]; then
   echo "Unexpected PyPI wheel URL." >&2
@@ -90,13 +92,13 @@ if [[ "$sdist_url" != https://files.pythonhosted.org/* ]]; then
   exit 1
 fi
 curl --fail --location --silent --show-error "$wheel_url" \
-  --output "$release_check/pypi/conda_sigstore-0.1.2-py3-none-any.whl"
+  --output "$release_check/pypi/conda_sigstore-0.1.3-py3-none-any.whl"
 curl --fail --location --silent --show-error "$sdist_url" \
-  --output "$release_check/pypi/conda_sigstore-0.1.2.tar.gz"
-cmp "$release_check/github/conda_sigstore-0.1.2-py3-none-any.whl" \
-  "$release_check/pypi/conda_sigstore-0.1.2-py3-none-any.whl"
-cmp "$release_check/github/conda_sigstore-0.1.2.tar.gz" \
-  "$release_check/pypi/conda_sigstore-0.1.2.tar.gz"
+  --output "$release_check/pypi/conda_sigstore-0.1.3.tar.gz"
+cmp "$release_check/github/conda_sigstore-0.1.3-py3-none-any.whl" \
+  "$release_check/pypi/conda_sigstore-0.1.3-py3-none-any.whl"
+cmp "$release_check/github/conda_sigstore-0.1.3.tar.gz" \
+  "$release_check/pypi/conda_sigstore-0.1.3.tar.gz"
 for release_artifact in "$release_check"/github/*
 do
   gh attestation verify "$release_artifact" --repo jezdez/conda-sigstore
@@ -116,7 +118,7 @@ plugin discovery:
 release_prefix="$(mktemp -d)"
 conda create --yes --prefix "$release_prefix" "conda=26.7.1" pip
 conda run --prefix "$release_prefix" python -m pip install --no-cache-dir \
-  "$release_check/pypi/conda_sigstore-0.1.2-py3-none-any.whl"
+  "$release_check/pypi/conda_sigstore-0.1.3-py3-none-any.whl"
 conda run --prefix "$release_prefix" python -m conda sigstore --help
 ```
 
@@ -129,7 +131,7 @@ If PyPI contains only one distribution, a missing attestation, an unexpected
 filename, or different bytes, leave the draft release private and prepare a
 new version. If both exact distributions and their attestations reached PyPI,
 compare them with the draft assets using the commands above, then publish the
-verified draft with `gh release edit 0.1.2 --repo jezdez/conda-sigstore --draft=false`
+verified draft with `gh release edit 0.1.3 --repo jezdez/conda-sigstore --draft=false`
 instead of rerunning the upload.
 
 If `Publish GitHub Release` alone fails after the PyPI job succeeds, rerun only
@@ -141,22 +143,36 @@ new version and tag when an artifact must change after publication.
 ## Publish to the personal conda channel
 
 The `Conda package` workflow builds a noarch Python package from the published PyPI
-source archive. Update its version and source SHA-256 for each release. Reset
-the build number to zero for a new version, or increment it when correcting
-the packaging of an existing version.
+source archive. The release workflow passes the version and SHA-256 of the
+source distribution it built. Rattler-Build checks that the downloaded archive
+matches this digest before building the conda package. Reset the build number
+to zero for a new version, or increment it when correcting the packaging of an
+existing version.
 
 The release workflow calls it after the GitHub release is public. To publish
-an existing release, dispatch it with the matching recipe version:
+an existing release, dispatch it with that release's version and verified
+source SHA-256:
 
 ```console
-gh workflow run conda.yml --ref main -f version=0.1.2 -f publish=true
+gh workflow run conda.yml --ref main -f version=0.1.3 \
+  -f source-sha256="$SOURCE_SHA256" -f publish=true
 ```
+
+Set `SOURCE_SHA256` from the source distribution checked in
+[Verify the release](#verify-the-release). Without a `source-sha256` override,
+the workflow builds the recipe's pinned source, currently 0.1.2. Publication
+then requires a requested version matching that pin. Update both recipe pins
+after a release to make it the default for local and CI builds.
 
 Pull requests, main-branch pushes, and manual runs with `publish=false` only
 build and test the package. Publication checks that the built package matches
-the requested version, records GitHub provenance, and uploads the same artifact.
+the requested version and creates separate SLSA build provenance and a CEP 27
+publication attestation. Before upload, it verifies the CEP 27 bundle against
+the exact filename, SHA-256, target channel, and expected workflow certificate
+identity and OIDC issuer. It uploads the same package to Anaconda.org and keeps
+the bundle in GitHub's attestation store and as a workflow artifact.
 
-Build and test the package with Rattler-Build:
+Build and test the recipe's pinned package with Rattler-Build:
 
 ```console
 pixi run --locked -e release build-conda
@@ -168,13 +184,15 @@ unreleased package-verifier integration. The recipe excludes pip's local
 source URL, and `--no-include-recipe` omits rendered build-directory metadata
 from the published archive. Keep the source recipe in Git.
 
-After explicit maintainer approval, upload the tested package using an
-Anaconda API key supplied through `ANACONDA_API_KEY` or Rattler's credential
-store:
+For a manual 0.1.3 upload, first update the recipe pins and rebuild the
+package. After explicit maintainer approval, upload the tested package using
+an Anaconda API key supplied through `ANACONDA_API_KEY` or Rattler's credential
+store. This command does not create or verify an attestation. Use the workflow
+above to publish with CEP 27 evidence.
 
 ```console
 pixi run --locked -e release rattler-build upload anaconda --owner jezdez --channel main \
-  dist/conda/noarch/conda-sigstore-0.1.2-*.conda
+  dist/conda/noarch/conda-sigstore-0.1.3-*.conda
 ```
 
 Do not use `--force` to replace a published package. Confirm the uploaded
@@ -183,6 +201,13 @@ environment:
 
 ```console
 conda create --name conda-sigstore-check --override-channels \
-  --channel jezdez --channel conda-forge "conda-sigstore=0.1.2"
+  --channel jezdez --channel conda-forge "conda-sigstore=0.1.3"
 conda run --name conda-sigstore-check conda sigstore --help
 ```
+
+Follow [Verify a conda-sigstore publication](docs/how-to/verify-project-package.md)
+to retrieve and check the CEP 27 bundle for the downloaded package. Require
+the expected workflow identity and GitHub OIDC issuer from the release
+metadata. This confirms the package and signer evidence without establishing
+channel authorization. Anaconda.org sidecars are not required for this check,
+and installing the package does not run it automatically.
