@@ -205,7 +205,7 @@
   enforcement false by default. The locked developer environments use
   `jezdez/conda` branch `feature/package-verifiers` from conda/conda#16518.
 
-- The current draft repodata transport requires conda to preserve
+- The accepted CEP 50 repodata transport requires conda to preserve
   `attestations_sha256` on the selected package record. Current conda
   `PackageRecord` and solver conversion paths do not preserve that field, so a
   conda change is required before real solver, install, or installed-audit
@@ -245,14 +245,14 @@
   automatically disable those checks for converted PEP 740 or PyPI bundles
   without authenticated conversion provenance.
 
-- In the draft `repodata` transport, fetch the immutable
+- In the CEP 50 `repodata` transport, fetch the immutable
   `.sigs.<attestations_sha256>` URL only when repodata provides a valid
   `attestations_sha256` field. Require exactly 64 lowercase hexadecimal
   characters before constructing the URL, enforce the configured streaming
   limit, and verify the advertised SHA-256 before parsing. Never probe for an
   undeclared sidecar. The mutable `.sigs` URL is for servers and generic
-  tooling, not conda-client retrieval. Refer to the proposal as
-  `conda/ceps#142` or the draft repodata transport.
+  tooling, not conda-client retrieval. Refer to the accepted standard as
+  [CEP 50](https://github.com/conda/ceps/blob/main/cep-0050.md).
 
 - The opt-in install verifier must require one cryptographically valid, exact
   artifact-bound CEP 27 statement. When repodata advertises
@@ -317,10 +317,13 @@
   - reference pages state exact commands, configuration, formats, and contracts
   - explanation pages describe design, threat models, and trade-offs
 
-- Keep standards status precise. Distinguish accepted CEP 27 from draft served
-  sidecar and source-attestation proposals. Label Prefix.dev transport behavior
-  as current service-specific compatibility and distinguish public client
-  behavior from unknown server behavior.
+- Keep standards status precise. CEP 27 publication statements and CEP 50
+  repodata sidecar distribution are accepted standards. The source-attestation
+  proposal in `conda/ceps#168` remains a draft. Standard acceptance does not
+  provide conda's unreleased package-verifier hook or metadata propagation.
+  CEP 50 does not define trusted identities, lockfile policy, or enforcement.
+  Label Prefix.dev transport behavior as current service-specific compatibility
+  and distinguish public client behavior from unknown server behavior.
 
 - Update command, standards, security, migration, offline, and interoperability
   pages whenever their corresponding contract changes. Do not let examples

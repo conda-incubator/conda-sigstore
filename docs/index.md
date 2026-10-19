@@ -9,10 +9,11 @@ package.
 This is alpha software, distributed through PyPI and the personal `jezdez`
 channel on Anaconda.org. Install
 verification requires the unreleased conda API in
-[conda/conda#16518](https://github.com/conda/conda/pull/16518). The draft
-repodata and source-attestation formats may change incompatibly. Current conda
-`PackageRecord` objects do not yet preserve the draft repodata
-`attestations_sha256` field.
+[conda/conda#16518](https://github.com/conda/conda/pull/16518). The repodata
+transport is defined by accepted
+[CEP 50](https://github.com/conda/ceps/blob/main/cep-0050.md), but current conda
+`PackageRecord` objects do not yet preserve its `attestations_sha256` field.
+Source attestations remain a draft format and may change incompatibly.
 :::
 
 Follow the [installation guide](how-to/install.md), then verify a public

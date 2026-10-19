@@ -59,7 +59,7 @@ entry.
 The package-verifier hook places the check after download but before extraction.
 That is the last point where conda has the selected URL, the expected digest,
 and the final archive while it can still reject the package before modifying a
-prefix. The PR 142 transport also needs `attestations_sha256` from the selected
+prefix. The CEP 50 transport also needs `attestations_sha256` from the selected
 package record. Current conda `PackageRecord` objects and solver conversion
 paths do not preserve the field, so a conda change is required before real
 solver and install flows can select the content-addressed sidecar. The selected
@@ -73,12 +73,13 @@ and [Upstream integration contracts](../reference/upstream-contracts.md).
 
 ## Transport choices
 
-The draft repodata transport lets channel metadata commit to exact sidecar
-bytes through `attestations_sha256`. The client validates the field before URL
-construction, fetches immutable `<artifact>.sigs.<sha256>`, enforces a streaming
-limit, and verifies the digest before parsing the container. Mutable
+Accepted [CEP 50](https://github.com/conda/ceps/blob/main/cep-0050.md) lets channel
+metadata commit to exact sidecar bytes through `attestations_sha256`. The client
+validates the field before URL construction, fetches immutable
+`<artifact>.sigs.<sha256>`, enforces a streaming limit, and verifies the digest
+before parsing the container. Mutable
 `<artifact>.sigs` exists for servers and generic tooling, not conda-client
-retrieval.
+retrieval. The client never probes for an undeclared CEP 50 sidecar.
 
 Prefix.dev already publishes deterministic adjacent sidecars without that
 repodata commitment. Supporting the existing convention provides useful
@@ -128,5 +129,4 @@ Such a standard would need to define which admitted bundle represents the
 publisher, how that signer maps to an uploader identity, and how delegation,
 rotation, revocation, history, and mirrors behave. It would also need to admit
 review or provenance bundles without accidentally granting publication
-authority. The repodata sidecar proposal deliberately leaves those questions
-out of scope.
+authority. CEP 50 leaves those questions out of scope.

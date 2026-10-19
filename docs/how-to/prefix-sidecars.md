@@ -91,7 +91,7 @@ Current Prefix.dev repodata does not commit to the `.v0.sigs` bytes. The
 verified statement still binds the exact package, but the result does not
 establish Prefix.dev's publisher-admission policy.
 
-See [Standards and formats](../reference/standards.md) for the
-integrity-bound draft transport and
+See [Standards and formats](../reference/standards.md) for
+CEP 50's repodata-bound transport and
 [Publish attestations to Prefix.dev](publish-prefix.md) for the producer
 workflow.

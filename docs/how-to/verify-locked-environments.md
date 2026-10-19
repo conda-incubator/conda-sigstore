@@ -100,7 +100,7 @@ selected package set.
 
 - Keep lockfile SHA-256 entries. They select exact bytes while Sigstore verifies
   signed evidence for those bytes.
-- Locked records that do not retain PR 142's `attestations_sha256` field require
+- Locked records that do not retain CEP 50's `attestations_sha256` field require
   adjacent `<artifact>.v0.sigs` evidence under the separate Prefix.dev
   compatibility policy. Current conda `PackageRecord` objects do not preserve
   that field.
