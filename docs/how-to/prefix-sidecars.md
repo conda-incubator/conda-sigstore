@@ -1,7 +1,10 @@
-# Verify Prefix.dev sidecars
+# Verify Prefix.dev .v0.sigs sidecars
 
-Prefix.dev currently serves a JSON bundle array at
+Prefix.dev's `.v0.sigs` compatibility transport serves a JSON bundle array at
 `<channel>/<subdir>/<artifact>.v0.sigs`.
+
+[CEP 50 repodata sidecars](../reference/standards.md) use
+`attestations_sha256` to select an immutable `.sigs.<sha256>` URL.
 
 ## Verify a sidecar explicitly
 
@@ -91,7 +94,5 @@ Current Prefix.dev repodata does not commit to the `.v0.sigs` bytes. The
 verified statement still binds the exact package, but the result does not
 establish Prefix.dev's publisher-admission policy.
 
-See [Standards and formats](../reference/standards.md) for
-CEP 50's repodata-bound transport and
-[Publish attestations to Prefix.dev](publish-prefix.md) for the producer
+See [Publish attestations to Prefix.dev](publish-prefix.md) for the producer
 workflow.
