@@ -264,7 +264,7 @@ def test_source_audit_requires_complete_authenticated_transparency_material(
         source_sha256=rattler_manifest["package_sha256"],
         publishers=(publisher,),
         predicate_type=PublishStatement.PREDICATE_TYPE,
-        # Rebind the descriptor so failures come from verification, not file hashing.
+        # Rehash the modified bundle to reach the transparency-log checks.
         bundles=(
             EmbeddedSourceBundle(
                 path="attestations/source.sigstore.json",

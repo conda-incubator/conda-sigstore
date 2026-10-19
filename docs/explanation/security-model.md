@@ -81,18 +81,18 @@ The {ref}`source-audit-limits` apply even when package publication evidence is
 valid. These checks limit archive and recipe processing without changing signer
 authorization.
 
-Source declarations and a builder's `attestation_verified` cache flag are
-unverified claims during an audit. A verified source result requires retained
-bundle bytes, their recipe-declared digests, and a signed statement that binds
-the source SHA-256. The auditor verifies the certificate, signature,
+The auditor cannot trust source declarations or a builder's
+`attestation_verified` cache flag. A verified source result requires retained
+bundles that match their recipe-declared digests. Their signed statements must
+bind the source SHA-256. The auditor verifies the certificate, signature,
 transparency-log material, and checkpoint before matching the signer to a
-declared publisher. Unsupported publisher ref constraints are rejected.
+declared publisher. It rejects unsupported publisher ref constraints.
 
-Rattler-Build 0.77.0 does not export this retained evidence. Its converted PyPI
-PEP 740 verification path also skips transparency-log verification. The auditor
-keeps those checks enabled and rejects converted bundles without the required
-material. Supporting a conversion would require authenticated conversion
-provenance and defined verification rules.
+Rattler-Build 0.77.0 does not export these bundles. It also skips
+transparency-log verification when verifying converted PyPI PEP 740 responses.
+The auditor keeps those checks enabled and rejects converted bundles without
+the required material. Supporting a conversion would require authenticated
+conversion provenance and defined verification rules.
 
 ## Offline risk
 

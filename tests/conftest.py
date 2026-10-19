@@ -23,7 +23,7 @@ def rattler_manifest() -> dict[str, str]:
 
 @pytest.fixture
 def rattler_source_recipe() -> dict[str, object]:
-    """Load the captured Rattler-Build source declaration."""
+    """Load the captured Rattler-Build rendered recipe."""
     recipe = (
         Path(__file__).with_name("fixtures")
         / "rattler-build-source"

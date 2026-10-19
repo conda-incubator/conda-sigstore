@@ -11,20 +11,21 @@ recipe-format standard.
 
 Rattler-Build 0.77.0 accepts `bundle_url` and `publishers` in a source's
 [`attestation` declaration](https://github.com/prefix-dev/rattler-build/blob/v0.77.0/crates/rattler_build_recipe/src/stage0/parser/source.rs#L374).
-It verifies sources during download and records an `attestation_verified` flag
+During download, it verifies sources and records an `attestation_verified` flag
 in its [source cache](https://github.com/prefix-dev/rattler-build/blob/v0.77.0/crates/rattler_build_source_cache/src/cache.rs#L332).
-It does not export the bundles and `verified` references needed by this auditor.
-A declaration or cache flag cannot produce a verified source-audit result.
+The builder does not export the bundles and `verified` references needed by
+this auditor. The auditor cannot verify a source from a declaration or cache
+flag alone.
 
-The auditor reads both direct recipe mappings and Rattler-Build's serialized
-`BuildOutput`, where sources appear under `recipe.source`. It accepts supported
-publisher declarations from either form. Without retained bundle references,
-the source result is `missing`. Audits do not fetch `bundle_url` or discover
+The auditor reads source declarations and supported publisher forms from direct
+recipe mappings or Rattler-Build's serialized `BuildOutput`, where sources
+appear under `recipe.source`. Without retained bundle references, the source
+result is `missing`. Audits do not fetch `bundle_url` or discover
 remote attestations.
 
 [Rattler-Build #2721](https://github.com/prefix-dev/rattler-build/pull/2721) is
-open work on discovering attestations for immutable GitHub release assets. It
-does not define embedded evidence export.
+an open pull request for attestation discovery on immutable GitHub release
+assets. It does not define how to export embedded evidence.
 
 ## Audit preconditions
 
@@ -179,9 +180,8 @@ embedded bundle.
 
 ## Experimental retained evidence
 
-The auditor supports the following extension for packages that retain source
-bundles. This is an experimental format, separate from released Rattler-Build
-output:
+The auditor supports this experimental extension for retained source bundles.
+Released Rattler-Build output does not use this format:
 
 ```yaml
 source:
@@ -246,24 +246,23 @@ retained bundle. It rejects converted evidence that cannot satisfy those
 checks. The embedded index has no authenticated conversion-provenance field
 that could justify different verification rules.
 
-## Evidence-export requirements
+## Requirements for exporting evidence
 
-For a builder to produce independently auditable source evidence, it must
-retain the raw bundles in the package, including the certificates and
-transparency-log material needed for verification. The rendered recipe must
-reference each bundle's regular file and SHA-256. Each signed statement must
-bind the recipe source's SHA-256.
+An independent source audit requires the builder to retain raw bundles in the
+package, including the certificates and transparency-log material needed for
+verification. The rendered recipe must reference each bundle's regular file
+and SHA-256. Each signed statement must bind the recipe source's SHA-256.
 
 The current auditor requires the paths and limits described above. A future
-export format must also permit bounded reads, reject unsafe paths and links,
-and retain enough information to verify the original statement and signer.
-Reconstructing a bundle from PEP 740 data additionally needs authenticated
-conversion provenance and a defined way to verify its transparency evidence.
-A builder's successful verification flag is insufficient.
+export format must also permit bounded reads and reject unsafe paths and links.
+It must retain enough information to verify the original statement and signer.
+Reconstructing a bundle from PEP 740 data also needs authenticated conversion
+provenance and a defined way to verify its transparency evidence. A builder's
+successful verification flag is insufficient.
 
 The interoperability fixture covers a rendered Rattler-Build 0.77.0 declaration.
-Verification of evidence exported by a real package build remains blocked on
-builder support for retaining that evidence.
+Testing evidence exported by a real package build requires builder support for
+retaining that evidence.
 
 ## Result contract
 

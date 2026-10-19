@@ -56,14 +56,14 @@ def resolve_embedded_file(root: Path, relative: str) -> Path | None:
 
 @dataclass(frozen=True, slots=True)
 class EmbeddedSourceBundle:
-    """One recipe-indexed Sigstore bundle stored in a package archive."""
+    """A Sigstore bundle listed in the recipe and stored in the package archive."""
 
     path: str
     sha256: str
 
     @classmethod
     def from_mapping(cls, value: object) -> EmbeddedSourceBundle:
-        """Parse only the path and digest from untrusted verified metadata."""
+        """Read the path and digest from untrusted attestation.verified metadata."""
         if not isinstance(value, Mapping):
             raise ValueError("attestation.verified entries must be objects")
         path = value.get("path")
@@ -95,7 +95,7 @@ class EmbeddedSourceBundle:
         verifier: BundleVerifier,
         max_bytes: int,
     ) -> tuple[dict[str, object], SignerIdentity | None]:
-        """Verify this bundle against its bytes and source requirement."""
+        """Check the bundle digest and verify its source statement."""
         report: dict[str, object] = {"path": self.path, "sha256": self.sha256}
         try:
             path = resolve_embedded_file(recipe_root, self.path)
@@ -203,7 +203,7 @@ class SourceAttestationRequirement:
 
     @staticmethod
     def publisher(value: object) -> SignerIdentity:
-        """Read an explicit identity or a supported recipe publisher."""
+        """Parse a publisher identity, shorthand, or rendered record."""
         if isinstance(value, Mapping):
             if "provider" not in value:
                 if set(value) != {"identity", "issuer"}:
@@ -308,7 +308,7 @@ class SourceAttestationRequirement:
         cls,
         rendered_recipe: Mapping[str, object],
     ) -> tuple[SourceAttestationRequirement, ...]:
-        """Parse every source-attestation requirement in a rendered recipe."""
+        """Parse source-attestation requirements from a recipe or rendered output."""
         if "recipe" in rendered_recipe:
             if "source" in rendered_recipe:
                 raise ValueError(
@@ -330,7 +330,7 @@ class SourceAttestationRequirement:
         if len(sources) > MAX_RECIPE_SOURCES:
             raise ValueError("too many recipe sources")
         declarations = 0
-        # Count alias occurrences before constructing any requirement objects.
+        # Count every occurrence before parsing, including repeated source objects.
         for source in sources:
             if not isinstance(source, Mapping):
                 continue
@@ -356,7 +356,7 @@ class SourceAttestationRequirement:
 
     @staticmethod
     def publisher_matches(expected: SignerIdentity, actual: SignerIdentity) -> bool:
-        """Apply the draft repository-boundary publisher matching rule."""
+        """Match the signer's issuer and identity to a recipe publisher."""
         if expected.issuer != actual.issuer:
             return False
         if not expected.identity.startswith("https://"):
