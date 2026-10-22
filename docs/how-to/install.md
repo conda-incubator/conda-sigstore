@@ -76,7 +76,7 @@ integration without changing your normal conda installation. You need
 [Pixi](https://pixi.sh) and Git.
 
 ```console
-git clone https://github.com/jezdez/conda-sigstore.git
+git clone https://github.com/conda-incubator/conda-sigstore.git
 cd conda-sigstore
 pixi install --locked --all
 pixi shell -e test

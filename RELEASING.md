@@ -10,7 +10,7 @@ Publishing and makes the GitHub release public only after PyPI succeeds.
 
 The PyPI Trusted Publisher uses these values:
 
-- Owner: `jezdez`
+- Owner: `conda-incubator`
 - Repository: `conda-sigstore`
 - Workflow: `release.yml`
 - Environment: `pypi`
@@ -65,13 +65,22 @@ The tag starts this sequence:
 
 ## Verify the release
 
+The 0.1.3 release was published before the repository moved to
+`conda-incubator`. Its attestations retain the original
+`jezdez/conda-sigstore` identity. Use that identity for this release even though
+the downloads are now hosted under `conda-incubator/conda-sigstore`. For
+releases published after the transfer, require the `conda-incubator` identity
+recorded in their trusted release metadata. Retrieve the historical GitHub
+bundles through `--owner jezdez`, then verify them locally against the
+original repository and release workflow identity.
+
 Download both formats from GitHub and PyPI, compare their bytes, then verify
 GitHub's build provenance and PyPI's publish attestations:
 
 ```console
 set -euo pipefail
 release_check="$(mktemp -d)"
-gh release download 0.1.3 --repo jezdez/conda-sigstore \
+gh release download 0.1.3 --repo conda-incubator/conda-sigstore \
   --dir "$release_check/github"
 mkdir "$release_check/pypi"
 curl --fail --location --silent --show-error \
@@ -101,7 +110,14 @@ cmp "$release_check/github/conda_sigstore-0.1.3.tar.gz" \
   "$release_check/pypi/conda_sigstore-0.1.3.tar.gz"
 for release_artifact in "$release_check"/github/*
 do
-  gh attestation verify "$release_artifact" --repo jezdez/conda-sigstore
+  bundle_dir="$(mktemp -d "$release_check/bundles.XXXXXX")"
+  (
+    cd "$bundle_dir"
+    gh attestation download "$release_artifact" --owner jezdez
+    gh attestation verify "$release_artifact" --bundle ./*.jsonl \
+      --repo jezdez/conda-sigstore \
+      --cert-identity https://github.com/jezdez/conda-sigstore/.github/workflows/release.yml@refs/tags/0.1.3
+  )
 done
 pipx run --spec "pypi-attestations==0.0.30" pypi-attestations verify pypi \
   --repository https://github.com/jezdez/conda-sigstore \
@@ -131,7 +147,7 @@ If PyPI contains only one distribution, a missing attestation, an unexpected
 filename, or different bytes, leave the draft release private and prepare a
 new version. If both exact distributions and their attestations reached PyPI,
 compare them with the draft assets using the commands above, then publish the
-verified draft with `gh release edit 0.1.3 --repo jezdez/conda-sigstore --draft=false`
+verified draft with `gh release edit 0.1.3 --repo conda-incubator/conda-sigstore --draft=false`
 instead of rerunning the upload.
 
 If `Publish GitHub Release` alone fails after the PyPI job succeeds, rerun only

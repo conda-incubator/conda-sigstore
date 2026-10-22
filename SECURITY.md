@@ -13,7 +13,7 @@ security fixes. After 1.0, this table will list the supported release lines.
 ## Reporting a vulnerability
 
 Do not open a public issue for a suspected vulnerability. Use a
-[private GitHub security advisory](https://github.com/jezdez/conda-sigstore/security/advisories/new)
+[private GitHub security advisory](https://github.com/conda-incubator/conda-sigstore/security/advisories/new)
 and include the affected version, trust configuration, artifact and sidecar
 shape, expected behavior, observed behavior, and a minimal reproducer when it is
 safe to share.

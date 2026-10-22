@@ -7,6 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Changed
+
+- Moved the project to `conda-incubator/conda-sigstore` and the documentation to
+  `conda-incubator.github.io/conda-sigstore`.
+
 ### Fixed
 
 - Documentation now identifies the repodata sidecar transport as accepted
@@ -136,8 +141,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Expanded the live Prefix interoperability check into a real strict
   pre-extraction installation followed by an environment audit.
 
-[Unreleased]: https://github.com/jezdez/conda-sigstore/compare/0.1.3...HEAD
-[0.1.3]: https://github.com/jezdez/conda-sigstore/compare/0.1.2...0.1.3
-[0.1.2]: https://github.com/jezdez/conda-sigstore/compare/0.1.1...0.1.2
-[0.1.1]: https://github.com/jezdez/conda-sigstore/compare/0.1.0...0.1.1
-[0.1.0]: https://github.com/jezdez/conda-sigstore/releases/tag/0.1.0
+[Unreleased]: https://github.com/conda-incubator/conda-sigstore/compare/0.1.3...HEAD
+[0.1.3]: https://github.com/conda-incubator/conda-sigstore/compare/0.1.2...0.1.3
+[0.1.2]: https://github.com/conda-incubator/conda-sigstore/compare/0.1.1...0.1.2
+[0.1.1]: https://github.com/conda-incubator/conda-sigstore/compare/0.1.0...0.1.1
+[0.1.0]: https://github.com/conda-incubator/conda-sigstore/releases/tag/0.1.0

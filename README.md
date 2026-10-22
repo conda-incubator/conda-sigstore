@@ -4,9 +4,10 @@
 It can also audit installed environments and, when explicitly enabled, reject a
 package before extraction when acceptable evidence is unavailable or invalid.
 
-The project is alpha software, distributed through PyPI and the personal
-`jezdez` channel on Anaconda.org. The
-opt-in install integration requires the unreleased package-verifier API in
+The project is part of [conda-incubator](https://github.com/conda-incubator),
+maintained by Jannis Leidel and Travis Hathaway. It is alpha software,
+distributed through PyPI and the personal `jezdez` channel on Anaconda.org.
+The opt-in install integration requires the unreleased package-verifier API in
 [conda/conda#16518](https://github.com/conda/conda/pull/16518). The draft
 source-evidence formats may still change incompatibly.
 
@@ -41,7 +42,7 @@ conda activate base
 conda install --override-channels -c jezdez -c conda-forge "conda-sigstore=0.1.2"
 ```
 
-The [installation guide](https://jezdez.github.io/conda-sigstore/how-to/install/)
+The [installation guide](https://conda-incubator.github.io/conda-sigstore/how-to/install/)
 also documents PyPI installation, the source preview, and the separate
 requirements for install enforcement.
 
@@ -56,12 +57,12 @@ conda sigstore audit [-n ENV | -p PREFIX] [--sources] [--prefix-sidecars] [--jso
 
 Choose the path that matches your task:
 
-- [Verify a public package](https://jezdez.github.io/conda-sigstore/tutorials/getting-started/)
-- [Sign a package](https://jezdez.github.io/conda-sigstore/tutorials/sign-package/)
-- [Audit an installed environment](https://jezdez.github.io/conda-sigstore/how-to/audit-environment/)
-- [Configure install verification](https://jezdez.github.io/conda-sigstore/how-to/configure-verification/)
-- [Publish attestations to Prefix.dev](https://jezdez.github.io/conda-sigstore/how-to/publish-prefix/)
-- [Look up commands and output formats](https://jezdez.github.io/conda-sigstore/reference/commands/)
+- [Verify a public package](https://conda-incubator.github.io/conda-sigstore/tutorials/getting-started/)
+- [Sign a package](https://conda-incubator.github.io/conda-sigstore/tutorials/sign-package/)
+- [Audit an installed environment](https://conda-incubator.github.io/conda-sigstore/how-to/audit-environment/)
+- [Configure install verification](https://conda-incubator.github.io/conda-sigstore/how-to/configure-verification/)
+- [Publish attestations to Prefix.dev](https://conda-incubator.github.io/conda-sigstore/how-to/publish-prefix/)
+- [Look up commands and output formats](https://conda-incubator.github.io/conda-sigstore/reference/commands/)
 
 ## Security boundary
 
@@ -73,9 +74,9 @@ It does not prove that the signer was authorized to publish to that channel,
 that the package was built safely, or that its contents are benign.
 
 Read the
-[security model](https://jezdez.github.io/conda-sigstore/explanation/security-model/)
+[security model](https://conda-incubator.github.io/conda-sigstore/explanation/security-model/)
 and report vulnerabilities according to the
-[security policy](https://github.com/jezdez/conda-sigstore/security/policy).
+[security policy](https://github.com/conda-incubator/conda-sigstore/security/policy).
 
 ## Development
 
@@ -87,6 +88,6 @@ pixi run --locked -e docs docs
 ```
 
 See the
-[contribution guide](https://github.com/jezdez/conda-sigstore/blob/main/CONTRIBUTING.md)
+[contribution guide](https://github.com/conda-incubator/conda-sigstore/blob/main/CONTRIBUTING.md)
 for the full development and release workflow. `conda-sigstore` is licensed
 under the BSD 3-Clause License.

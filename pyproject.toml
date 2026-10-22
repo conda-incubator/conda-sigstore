@@ -33,7 +33,10 @@ description = "Create and verify Sigstore attestations for conda packages"
 dynamic = ["version"]
 keywords = ["conda", "in-toto", "plugin", "sigstore", "supply-chain-security"]
 license = "BSD-3-Clause"
-maintainers = [{name = "Jannis Leidel", email = "jannis@leidel.info"}]
+maintainers = [
+  {name = "Jannis Leidel", email = "jannis@leidel.info"},
+  {name = "Travis Hathaway"},
+]
 name = "conda-sigstore"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.11"
@@ -42,12 +45,12 @@ requires-python = ">=3.11"
 conda-sigstore = "conda_sigstore.plugin"
 
 [project.urls]
-Changelog = "https://github.com/jezdez/conda-sigstore/blob/main/CHANGELOG.md"
-Documentation = "https://jezdez.github.io/conda-sigstore"
-Homepage = "https://github.com/jezdez/conda-sigstore"
-Issues = "https://github.com/jezdez/conda-sigstore/issues"
-Repository = "https://github.com/jezdez/conda-sigstore"
-Security = "https://github.com/jezdez/conda-sigstore/security/policy"
+Changelog = "https://github.com/conda-incubator/conda-sigstore/blob/main/CHANGELOG.md"
+Documentation = "https://conda-incubator.github.io/conda-sigstore"
+Homepage = "https://github.com/conda-incubator/conda-sigstore"
+Issues = "https://github.com/conda-incubator/conda-sigstore/issues"
+Repository = "https://github.com/conda-incubator/conda-sigstore"
+Security = "https://github.com/conda-incubator/conda-sigstore/security/policy"
 
 [tool.hatch.version]
 source = "vcs"

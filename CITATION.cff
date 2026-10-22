@@ -9,6 +9,6 @@ authors:
   - family-names: Leidel
     given-names: Jannis
     email: jannis@leidel.info
-repository-code: "https://github.com/jezdez/conda-sigstore"
-url: "https://jezdez.github.io/conda-sigstore"
+repository-code: "https://github.com/conda-incubator/conda-sigstore"
+url: "https://conda-incubator.github.io/conda-sigstore"
 license: BSD-3-Clause
