@@ -18,7 +18,7 @@ below use a POSIX shell.
 Choose the exact package filename from the
 [`jezdez` channel's files](https://anaconda.org/jezdez/conda-sigstore/files) and
 find the corresponding successful publication run in the
-[repository's workflows](https://github.com/jezdez/conda-sigstore/actions).
+[repository's workflows](https://github.com/conda-incubator/conda-sigstore/actions).
 Replace `VERSION`, `BUILD`, and `PUBLISH_RUN_ID` below. If the release workflow
 called the conda publishing workflow, use that release run.
 
@@ -28,7 +28,7 @@ run_id='PUBLISH_RUN_ID'
 
 curl --fail --location --output "$package" \
   "https://conda.anaconda.org/jezdez/noarch/$package"
-gh run download "$run_id" --repo jezdez/conda-sigstore \
+gh run download "$run_id" --repo conda-incubator/conda-sigstore \
   --name conda-publication-attestation --dir evidence
 ```
 
@@ -53,9 +53,13 @@ for the CEP 27 statement.
 
 To require a particular signer, obtain the expected workflow path and Git ref
 from trusted release metadata, then set `EXPECTED_CERTIFICATE_IDENTITY` to
+`https://github.com/conda-incubator/conda-sigstore/.github/workflows/WORKFLOW_FILE@GIT_REF`
+for a publication made after the repository transfer. Earlier publications,
+including the original 0.1.3 package, retain
 `https://github.com/jezdez/conda-sigstore/.github/workflows/WORKFLOW_FILE@GIT_REF`.
-Do not derive the expected identity solely from the bundle being checked.
-Supply both signer options together:
+The transfer does not rewrite existing certificates. Select the exact identity
+for the publication being checked from trusted release metadata, and do not
+derive it solely from the bundle. Supply both signer options together:
 
 ```console
 conda sigstore verify "$package" \
@@ -68,13 +72,18 @@ conda sigstore verify "$package" \
 ## Retrieve the bundle from GitHub's attestation store
 
 The workflow also records the publication bundle in GitHub's attestation store.
-Retrieve it by the downloaded package's digest, filtering for the CEP 27
-predicate:
+For publications made after the transfer, retrieve it by the downloaded
+package's digest, filtering for the CEP 27 predicate:
 
 ```console
-gh attestation download "$package" --repo jezdez/conda-sigstore \
+gh attestation download "$package" --repo conda-incubator/conda-sigstore \
   --predicate-type https://schemas.conda.org/attestations-publish-1.schema.json
 ```
+
+For a publication made before the transfer, replace
+`--repo conda-incubator/conda-sigstore` with `--owner jezdez`. Historical bundles
+remain available through the original owner. The repository lookup does not
+retrieve them after the transfer.
 
 [GitHub CLI](https://cli.github.com/manual/gh_attestation_download) writes raw
 bundles as JSON Lines to `sha256:DIGEST.jsonl` on Linux and macOS or

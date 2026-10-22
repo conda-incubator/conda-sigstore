@@ -33,7 +33,7 @@ html_theme_options = {
     "icon_links": [
         {
             "name": "GitHub",
-            "url": "https://github.com/jezdez/conda-sigstore",
+            "url": "https://github.com/conda-incubator/conda-sigstore",
             "icon": "fa-brands fa-square-github",
             "type": "fontawesome",
         },
@@ -41,12 +41,12 @@ html_theme_options = {
 }
 
 html_context = {
-    "github_user": "jezdez",
+    "github_user": "conda-incubator",
     "github_repo": "conda-sigstore",
     "github_version": "main",
     "doc_path": "docs",
 }
 
 html_extra_path = ["robots.txt"]
-html_baseurl = "https://jezdez.github.io/conda-sigstore/"
+html_baseurl = "https://conda-incubator.github.io/conda-sigstore/"
 exclude_patterns = ["_build"]

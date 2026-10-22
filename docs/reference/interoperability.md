@@ -19,7 +19,7 @@ The released Python binding calls `rattler_sigstore` 0.2.2. Pixi 0.82.0 uses
 compatibility with the released Python API and its native verifier. They do
 not test every consumer crate version carried by the other tools.
 
-The [fixture manifest](https://github.com/jezdez/conda-sigstore/blob/main/tests/fixtures/rattler/manifest.json)
+The [fixture manifest](https://github.com/conda-incubator/conda-sigstore/blob/main/tests/fixtures/rattler/manifest.json)
 records the package and sidecar digests, exact producer workflow, producer
 version, and public trust-material sources. The fixture was signed by
 `rattler-build publish --generate-attestation`. Its producer is older than the
