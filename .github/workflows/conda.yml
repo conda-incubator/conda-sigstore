@@ -20,7 +20,7 @@ on:
         description: Released version to build
         type: string
         required: true
-        default: "0.1.4"
+        default: "0.1.5"
       source-sha256:
         description: Source archive SHA-256, required to override the pinned recipe
         type: string
