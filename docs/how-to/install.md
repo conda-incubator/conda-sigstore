@@ -9,11 +9,11 @@ newer.
 
 The personal [`jezdez` channel](https://anaconda.org/jezdez/conda-sigstore)
 provides the noarch conda package. Its dependencies come from conda-forge.
-For a standard conda installation, activate `base` and install 0.1.4:
+For a standard conda installation, activate `base` and install 0.1.5:
 
 ```console
 conda activate base
-conda install --override-channels -c jezdez -c conda-forge "conda-sigstore=0.1.4"
+conda install --override-channels -c jezdez -c conda-forge "conda-sigstore=0.1.5"
 conda sigstore --help
 ```
 
@@ -30,11 +30,11 @@ conda 26.5 and newer include the
 download the published wheel from PyPI, convert it to a conda package, and
 install it into the environment that owns conda.
 
-For a standard conda installation, activate `base` and install 0.1.4 from PyPI:
+For a standard conda installation, activate `base` and install 0.1.5 from PyPI:
 
 ```console
 conda activate base
-conda pypi install "conda-sigstore==0.1.4"
+conda pypi install "conda-sigstore==0.1.5"
 conda sigstore --help
 ```
 
@@ -49,7 +49,7 @@ Create a dedicated environment that contains conda, pip, and the plugin:
 ```console
 conda create --name conda-sigstore "python>=3.11" conda pip
 conda activate conda-sigstore
-python -m pip install "conda-sigstore==0.1.4"
+python -m pip install "conda-sigstore==0.1.5"
 conda sigstore --help
 ```
 
@@ -73,7 +73,7 @@ real solver and install flows can select its content-addressed sidecar.
 
 Use the repository's locked test environment to evaluate the unreleased conda
 integration without changing your normal conda installation. You need
-[Pixi](https://pixi.sh) and Git.
+[Pixi](https://pixi.sh) 0.82.1 or newer and Git.
 
 ```console
 git clone https://github.com/conda-incubator/conda-sigstore.git

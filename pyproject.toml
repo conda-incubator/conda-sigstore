@@ -24,6 +24,7 @@ classifiers = [
 dependencies = [
   # conda and conda-package-handling are supplied by the active conda environment.
   "backports.zstd>=1.0.0; python_version < '3.14'",
+  "certifi>=2026.10.19",
   "cryptography>=42",
   "pyasn1~=0.6",
   "rich>=13",
@@ -119,6 +120,8 @@ preview = ["pixi-build"]
 
 [tool.pixi.dependencies]
 "backports.zstd" = ">=1.0.0"
+ca-certificates = ">=2026.10.19"
+certifi = ">=2026.10.19"
 conda = { git = "https://github.com/jezdez/conda.git", rev = "b5dab4a46a650c6f0f82b2486993ee6891415deb", package = { version = "26.7.2.dev77+gb5dab4a46", build = { backend = { name = "pixi-build-python" }, config = { ignore-pypi-mapping = false, env = { SETUPTOOLS_SCM_PRETEND_VERSION = "26.7.2.dev77+gb5dab4a46" } } } } }
 conda-package-handling = ">=2"
 cryptography = ">=42"
@@ -165,6 +168,8 @@ sphinx-design = ">=0.6"
 sphinx-sitemap = ">=2.5"
 
 [tool.pixi.feature.release.dependencies]
+ca-certificates = ">=2026.10.19"
+certifi = ">=2026.10.19"
 hatch-vcs = ">=0.2.0"
 hatchling = ">=1.12.2"
 python = "3.13.*"
