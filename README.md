@@ -34,12 +34,12 @@ does not define trusted signer identities or install enforcement policy.
 conda-sigstore requires Python 3.11 or newer. Install it in the Python
 environment that owns the `conda` executable.
 
-For a standard conda installation, activate `base` and install 0.1.2 from the
+For a standard conda installation, activate `base` and install 0.1.4 from the
 personal `jezdez` channel, with dependencies from conda-forge:
 
 ```console
 conda activate base
-conda install --override-channels -c jezdez -c conda-forge "conda-sigstore=0.1.2"
+conda install --override-channels -c jezdez -c conda-forge "conda-sigstore=0.1.4"
 ```
 
 The [installation guide](https://conda-incubator.github.io/conda-sigstore/how-to/install/)
