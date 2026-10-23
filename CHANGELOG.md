@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-10-23
+
 ### Changed
 
 - Moved the project to `conda-incubator/conda-sigstore` and the documentation to
@@ -141,7 +143,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Expanded the live Prefix interoperability check into a real strict
   pre-extraction installation followed by an environment audit.
 
-[Unreleased]: https://github.com/conda-incubator/conda-sigstore/compare/0.1.3...HEAD
+[Unreleased]: https://github.com/conda-incubator/conda-sigstore/compare/0.1.4...HEAD
+[0.1.4]: https://github.com/conda-incubator/conda-sigstore/compare/0.1.3...0.1.4
 [0.1.3]: https://github.com/conda-incubator/conda-sigstore/compare/0.1.2...0.1.3
 [0.1.2]: https://github.com/conda-incubator/conda-sigstore/compare/0.1.1...0.1.2
 [0.1.1]: https://github.com/conda-incubator/conda-sigstore/compare/0.1.0...0.1.1
