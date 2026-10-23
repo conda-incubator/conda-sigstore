@@ -41,6 +41,26 @@ trust anchor. The observed public client paths are documented in
 information does not establish whether Prefix.dev's server compares the bundle
 signer with the uploader identity.
 
+## HTTPS certificate trust
+
+HTTPS certificate validation uses different trust anchors from Sigstore bundle
+verification. Sigstore distributes its production Fulcio and transparency-log
+keys through [TUF](https://docs.sigstore.dev/about/security/#sigstores-trust-root).
+Updating HTTPS CA bundles does not replace those keys or disable bundle checks.
+
+Version 0.1.5 requires `certifi>=2026.10.19`. Conda packages and locked
+environments also require `ca-certificates>=2026.10.19`. These minimums remove
+`emSign ECC Root CA - G3` from the packaged HTTPS CA bundles following the
+[eMudhra intermediate CA compromise](https://github.com/certifi/python-certifi/security/advisories/GHSA-6q48-6c7w-9gw2).
+They match the CA package minimums in
+[conda 26.9.4](https://github.com/conda/conda/releases/tag/26.9.4).
+
+Operators must update any custom CA bundle or operating-system trust store used
+by their deployment. Dependency minimums do not update those external stores.
+Network tools also need their own updates. CI uses
+[Pixi 0.82.1](https://github.com/prefix-dev/pixi/releases/tag/v0.82.1), which
+mitigates the same incident in its bundled TLS verifier.
+
 ## Adversaries and assumptions
 
 The model includes:

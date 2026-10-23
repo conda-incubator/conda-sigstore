@@ -25,6 +25,8 @@ requirements:
     - hatch-vcs >=0.2.0
   run:
     - python >=3.11
+    - ca-certificates >=2026.10.19
+    - certifi >=2026.10.19
     - conda >=26.5
     - conda-package-handling >=2
     - backports.zstd >=1.0.0
